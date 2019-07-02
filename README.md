@@ -1,2 +1,5 @@
-# Software-for-CT-guided-robotics
-ros software for ct guided robotics
+# Software for CT guided robotics
+
+ROS software controlling a surgical robot (lung biopsy).
+
+

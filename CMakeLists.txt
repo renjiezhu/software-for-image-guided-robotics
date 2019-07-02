@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   tf2
+  tf2_ros
 )
 
 ## System dependencies are found with CMake's conventions
@@ -53,6 +54,7 @@ add_message_files(
   FILES
   baseFrameState.msg
   needleFrameState.msg
+  worldFrameState.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -107,7 +109,9 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES software_interface
 #  CATKIN_DEPENDS roscpp rospy std_msgs
- DEPENDS system_lib message_runtime
+ DEPENDS 
+#  system_lib 
+ message_runtime
 )
 
 ###########
