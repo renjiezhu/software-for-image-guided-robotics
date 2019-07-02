@@ -8,8 +8,8 @@
 
 // #include "software_interface/worldToBase.h"
 
-int worldToBase(geometry_msgs::QuaternionPtr quaternion) {
-
+bool worldToBase(geometry_msgs::QuaternionPtr quaternion) {
+    return true;
 }
 
 int main(int argc, char **argv)
