@@ -61,7 +61,7 @@ add_message_files(
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
-  world_to_base_srv.srv
+  world_to_base.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -212,3 +212,9 @@ include_directories(
 add_executable(world_to_base src/world_to_base_client.cpp)
 target_link_libraries(world_to_base ${catkin_LIBRARIES})
 # add_dependencies(world_to_base)
+
+add_executable(robot_control_key src/robot_control_key.cpp)
+target_link_libraries(robot_control_key ${catkin_LIBRARIES})
+
+add_executable(robot_control_listener src/robot_control_listener)
+target_link_libraries(robot_control_listener ${catkin_LIBRARIES})
