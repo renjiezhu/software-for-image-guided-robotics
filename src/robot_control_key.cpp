@@ -48,7 +48,7 @@ RobotControlKey::RobotControlKey()
     nh.param("test_y", y, y);
     nh.param("test_z", z, z);
 
-    robot_pos_pub = nh.advertise<geometry_msgs::Point>("software_interface/keyboard_test", 1);
+    robot_pos_pub = nh.advertise<geometry_msgs::Point>("keyboard_test", 1);
 }
 
 int kfd = 0;

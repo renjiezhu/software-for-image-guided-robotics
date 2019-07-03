@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "keyboard_listener");
     ros::NodeHandle nh;
-    ros::Subscriber sub = nh.subscribe("software_interface/keyboard_test", 1, keyboardCallback);
+    ros::Subscriber sub = nh.subscribe("keyboard_test", 1, keyboardCallback);
 
     ros::spin();
 
