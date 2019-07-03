@@ -52,15 +52,16 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  baseFrameState.msg
-  needleFrameState.msg
-  worldFrameState.msg
+  vector3.msg
+  base_frame_state.msg
+  needle_frame_state.msg
+  world_frame_state.msg
 )
 
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
-  worldToBase.srv
+  world_to_base_srv.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -71,10 +72,10 @@ add_service_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -108,10 +109,15 @@ add_service_files(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES software_interface
-#  CATKIN_DEPENDS roscpp rospy std_msgs
- DEPENDS 
-#  system_lib 
+ CATKIN_DEPENDS 
  message_runtime
+ roscpp 
+ rospy 
+ std_msgs
+ tf2
+ tf2_ros
+#  DEPENDS 
+#  system_lib 
 )
 
 ###########
@@ -121,7 +127,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -202,3 +208,7 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+add_executable(world_to_base src/world_to_base_client.cpp)
+target_link_libraries(world_to_base ${catkin_LIBRARIES})
+# add_dependencies(world_to_base)
