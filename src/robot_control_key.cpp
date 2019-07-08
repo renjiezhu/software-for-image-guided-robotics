@@ -11,7 +11,7 @@
 
 #include "ros/ros.h"
 // #include "tf2/LinearMath/Transform.h"
-#include "geometry_msgs/Point.h"
+#include "software_interface/keyboard_input.h"
 #include "tf2/utils.h"
 #include "signal.h"
 #include "termios.h"
@@ -34,21 +34,25 @@ public:
 private:
     ros::NodeHandle nh;
     // test values
-    double x, y, z;
+    double x, y, z, roll, pitch, yaw, z_needle;
 
     ros::Publisher robot_pos_pub;
 };
 
 // ctor
 RobotControlKey::RobotControlKey()
-    : x(0), y(0), z(0)
+    : x(0), y(0), z(0), roll(0), pitch(0), yaw(0), z_needle(0)
 {
 
-    nh.param("test_x", x, x);
-    nh.param("test_y", y, y);
-    nh.param("test_z", z, z);
+    nh.param("x", x, x);
+    nh.param("y", y, y);
+    nh.param("z", z, z);
+    nh.param("roll", roll, roll);
+    nh.param("pitch", pitch, pitch);
+    nh.param("yaw", yaw, yaw);
+    nh.param("z_needle", z_needle, z_needle);
 
-    robot_pos_pub = nh.advertise<geometry_msgs::Point>("keyboard_test", 1);
+    robot_pos_pub = nh.advertise<software_interface::keyboard_input>("keyboard_input", 1);
 }
 
 int kfd = 0;
@@ -106,45 +110,89 @@ void RobotControlKey::keyLoop()
         switch (c)
         {
         case KEYCODE_L:
-            ROS_DEBUG("LEFT");
-            ROS_INFO("LEFT,   x=%1d", (int)--x);
+            --x;
+            ROS_DEBUG("X - ,   x=%1d", (int) x);
             dirty = true;
             break;
         case KEYCODE_R:
-            ROS_DEBUG("RIGHT");
-            ROS_INFO("RIGHT,  x=%1d", (int)++x);
+            ++x;
+            ROS_DEBUG("X + ,   x=%1d", (int) x);
             dirty = true;
             break;
         case KEYCODE_U:
-            ROS_DEBUG("UP");
-            ROS_INFO("UP,     y=%1d", (int)++y);
+            ++y;
+            ROS_DEBUG("Y + ,   y=%1d", (int) y);
             dirty = true;
             break;
         case KEYCODE_D:
-            ROS_DEBUG("DOWN");
-            ROS_INFO("DOWN,   y=%1d", (int)--y);
+            --y;
+            ROS_DEBUG("Y - ,   y=%1d", (int) y);
             dirty = true;
             break;
         case 'i': case 'I':
-            ROS_DEBUG("INSERT");
-            ROS_INFO("INS,    z=%1d", (int)++z);
+            ++z_needle;
+            ROS_DEBUG("INS,    n=%1d", (int) z_needle);
             dirty = true;
             break;
         case 'o': case 'O':
-            ROS_DEBUG("EXTRACT");
-            ROS_INFO("EXT,    z=%1d", (int)--z);
+            --z_needle;
+            ROS_DEBUG("EXT,    n=%1d", (int) z_needle);
+            dirty = true;
+            break;
+        case 'z': case 'Z':
+            ++z;
+            ROS_DEBUG("Z + ,   z=%1d", (int) z);
+            dirty = true;
+            break;
+        case 'x': case 'X':
+            --z;
+            ROS_DEBUG("Z - ,   z=%1d", (int) z);
+            dirty = true;
+            break;
+        case 'r': case 'R':
+            ++roll;
+            ROS_DEBUG("R + ,   r=%1d", (int) roll);
+            dirty = true;
+            break;
+        case 'f': case 'F':
+            --roll;
+            ROS_DEBUG("R - ,   r=%1d", (int) roll);
+            dirty = true;
+            break;
+        case 't': case 'T':
+            ++pitch;
+            ROS_DEBUG("P + ,   p=%1d", (int) pitch);
+            dirty = true;
+            break;
+        case 'g': case 'G':
+            --pitch;
+            ROS_DEBUG("P - ,   p=%1d", (int) pitch);
+            dirty = true;
+            break;
+        case 'y': case 'Y':
+            ++yaw;
+            ROS_DEBUG("W + ,   w=%1d", (int) yaw);
+            dirty = true;
+            break;
+        case 'h': case 'H':
+            --yaw;
+            ROS_DEBUG("W - ,   w=%1d", (int) yaw);
             dirty = true;
             break;
         }
 
-        geometry_msgs::Point position;
-        position.x = x;
-        position.y = y;
-        position.z = z;
+        software_interface::keyboard_input input;
+        input.robot.linear.x = x;
+        input.robot.linear.y = y;
+        input.robot.linear.z = z;
+        input.robot.angular.x = roll;
+        input.robot.angular.y = pitch;
+        input.robot.angular.z = yaw;
+        input.z_needle = z_needle;
 
         if (dirty == true)
         {
-            robot_pos_pub.publish(position);
+            robot_pos_pub.publish(input);
             dirty = false;
         }
     }

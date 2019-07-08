@@ -56,6 +56,7 @@ add_message_files(
   base_frame_state.msg
   needle_frame_state.msg
   world_frame_state.msg
+  keyboard_input.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -75,6 +76,7 @@ add_service_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
+  geometry_msgs
 )
 
 ################################################
