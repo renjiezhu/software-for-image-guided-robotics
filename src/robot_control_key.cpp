@@ -101,8 +101,9 @@ void RobotControlKey::keyLoop()
     raw.c_cc[VEOF] = 2;
     tcsetattr(kfd, TCSANOW, &raw);
 
-    puts("Use keyboard to move the robot.\n");
-    puts("Key bindings:\n|\t|   +\t|   -\t|");
+    puts("\nUse keyboard to move the robot.\n");
+    puts("Key bindings:\n|-----------------------|");
+    puts("|\t|   +\t|   -\t|");
     puts("|-------|-------|-------|");
     puts("|  \u03b4x\t|   \u2191\t|   \u2193\t|");
     puts("|  \u03b4y\t|   \u2192\t|   \u2190\t|");
@@ -110,7 +111,8 @@ void RobotControlKey::keyLoop()
     puts("| \u03b4roll\t|   r\t|   f\t|");
     puts("|\u03b4pitch\t|   t\t|   g\t|");
     puts("| \u03b4yaw\t|   y\t|   h\t|");
-    puts("|needle\t|   i\t|   o\t|\n");
+    puts("|needle\t|   i\t|   o\t|");
+    puts("|-----------------------|\n");
 
     while (ros::ok())
     {

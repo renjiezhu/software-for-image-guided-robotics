@@ -10,8 +10,8 @@ def test_callback(data):
 def vrep_callback(data):
     pos = np.array([data.linear.x, data.linear.y, data.linear.z])
     ori = np.array([data.angular.x, data.angular.y, data.angular.z])
-    rospy.logdebug(pos)
-    rospy.logdebug(ori)
+    rospy.loginfo(pos)
+    rospy.loginfo(ori)
 
 
 def listener():
