@@ -213,10 +213,12 @@ include_directories(
 
 add_executable(world_to_base src/world_to_base_client.cpp)
 target_link_libraries(world_to_base ${catkin_LIBRARIES})
-# add_dependencies(world_to_base)
 
 add_executable(robot_control_key src/robot_control_key.cpp)
 target_link_libraries(robot_control_key ${catkin_LIBRARIES})
 
-add_executable(robot_control_listener src/robot_control_listener)
+add_executable(robot_control_listener src/robot_control_listener.cpp)
 target_link_libraries(robot_control_listener ${catkin_LIBRARIES})
+
+add_executable(needle_control_listener src/needle_control_listener.cpp)
+target_link_libraries(needle_control_listener ${catkin_LIBRARIES})
