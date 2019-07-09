@@ -3,6 +3,10 @@
  * 
  * Keyboard control 
  * 
+ * Two Publishers:
+ * * robot_pos_pub
+ * * needle_pub
+ * 
  * By Renjie Zhu (rezhu@eng.ucsd.edu)
  * 
  * July 3rd, 2019
@@ -10,14 +14,14 @@
  */
 
 #include "ros/ros.h"
-// #include "tf2/LinearMath/Transform.h"
-#include "software_interface/keyboard_input.h"
+#include "geometry_msgs/Twist.h"
+#include "std_msgs/Float64.h"
 #include "tf2/utils.h"
 #include "signal.h"
 #include "termios.h"
 #include "stdio.h"
 
-#define KEYCODE_R 0x43 
+#define KEYCODE_R 0x43
 #define KEYCODE_L 0x44
 #define KEYCODE_U 0x41
 #define KEYCODE_D 0x42
@@ -37,6 +41,7 @@ private:
     double x, y, z, roll, pitch, yaw, z_needle;
 
     ros::Publisher robot_pos_pub;
+    ros::Publisher needle_pub;
 };
 
 // ctor
@@ -52,7 +57,8 @@ RobotControlKey::RobotControlKey()
     nh.param("yaw", yaw, yaw);
     nh.param("z_needle", z_needle, z_needle);
 
-    robot_pos_pub = nh.advertise<software_interface::keyboard_input>("keyboard_input", 1);
+    robot_pos_pub = nh.advertise<geometry_msgs::Twist>("robot_movement", 1);
+    needle_pub = nh.advertise<std_msgs::Float64>("needle_insertion", 1);
 }
 
 int kfd = 0;
@@ -84,6 +90,7 @@ void RobotControlKey::keyLoop()
 {
     char c;
     bool dirty = false;
+    bool needle_dirty = false;
 
     // get the console in raw mode
     tcgetattr(kfd, &cooked);
@@ -111,89 +118,107 @@ void RobotControlKey::keyLoop()
         {
         case KEYCODE_L:
             --x;
-            ROS_DEBUG("X - ,   x=%1d", (int) x);
+            ROS_DEBUG("X - ,   x=%1d", (int)x);
             dirty = true;
             break;
         case KEYCODE_R:
             ++x;
-            ROS_DEBUG("X + ,   x=%1d", (int) x);
+            ROS_DEBUG("X + ,   x=%1d", (int)x);
             dirty = true;
             break;
         case KEYCODE_U:
             ++y;
-            ROS_DEBUG("Y + ,   y=%1d", (int) y);
+            ROS_DEBUG("Y + ,   y=%1d", (int)y);
             dirty = true;
             break;
         case KEYCODE_D:
             --y;
-            ROS_DEBUG("Y - ,   y=%1d", (int) y);
+            ROS_DEBUG("Y - ,   y=%1d", (int)y);
             dirty = true;
             break;
-        case 'i': case 'I':
+        case 'i':
+        case 'I':
             ++z_needle;
-            ROS_DEBUG("INS,    n=%1d", (int) z_needle);
-            dirty = true;
+            ROS_DEBUG("INS,    n=%1d", (int)z_needle);
+            needle_dirty = true;
             break;
-        case 'o': case 'O':
+        case 'o':
+        case 'O':
             --z_needle;
-            ROS_DEBUG("EXT,    n=%1d", (int) z_needle);
-            dirty = true;
+            ROS_DEBUG("EXT,    n=%1d", (int)z_needle);
+            needle_dirty = true;
             break;
-        case 'z': case 'Z':
+        case 'z':
+        case 'Z':
             ++z;
-            ROS_DEBUG("Z + ,   z=%1d", (int) z);
+            ROS_DEBUG("Z + ,   z=%1d", (int)z);
             dirty = true;
             break;
-        case 'x': case 'X':
+        case 'x':
+        case 'X':
             --z;
-            ROS_DEBUG("Z - ,   z=%1d", (int) z);
+            ROS_DEBUG("Z - ,   z=%1d", (int)z);
             dirty = true;
             break;
-        case 'r': case 'R':
+        case 'r':
+        case 'R':
             ++roll;
-            ROS_DEBUG("R + ,   r=%1d", (int) roll);
+            ROS_DEBUG("R + ,   r=%1d", (int)roll);
             dirty = true;
             break;
-        case 'f': case 'F':
+        case 'f':
+        case 'F':
             --roll;
-            ROS_DEBUG("R - ,   r=%1d", (int) roll);
+            ROS_DEBUG("R - ,   r=%1d", (int)roll);
             dirty = true;
             break;
-        case 't': case 'T':
+        case 't':
+        case 'T':
             ++pitch;
-            ROS_DEBUG("P + ,   p=%1d", (int) pitch);
+            ROS_DEBUG("P + ,   p=%1d", (int)pitch);
             dirty = true;
             break;
-        case 'g': case 'G':
+        case 'g':
+        case 'G':
             --pitch;
-            ROS_DEBUG("P - ,   p=%1d", (int) pitch);
+            ROS_DEBUG("P - ,   p=%1d", (int)pitch);
             dirty = true;
             break;
-        case 'y': case 'Y':
+        case 'y':
+        case 'Y':
             ++yaw;
-            ROS_DEBUG("W + ,   w=%1d", (int) yaw);
+            ROS_DEBUG("W + ,   w=%1d", (int)yaw);
             dirty = true;
             break;
-        case 'h': case 'H':
+        case 'h':
+        case 'H':
             --yaw;
-            ROS_DEBUG("W - ,   w=%1d", (int) yaw);
+            ROS_DEBUG("W - ,   w=%1d", (int)yaw);
             dirty = true;
             break;
         }
 
-        software_interface::keyboard_input input;
-        input.robot.linear.x = x;
-        input.robot.linear.y = y;
-        input.robot.linear.z = z;
-        input.robot.angular.x = roll;
-        input.robot.angular.y = pitch;
-        input.robot.angular.z = yaw;
-        input.z_needle = z_needle;
+        geometry_msgs::Twist input;
+        input.linear.x = x;
+        input.linear.y = y;
+        input.linear.z = z;
+        input.angular.x = roll;
+        input.angular.y = pitch;
+        input.angular.z = yaw;
 
-        if (dirty == true)
+        std_msgs::Float64 input_n;
+        input_n.data = z_needle;
+
+        if (dirty)
         {
             robot_pos_pub.publish(input);
             dirty = false;
+        }
+
+        if (needle_dirty)
+        {
+            needle_pub.publish(input_n);
+            needle_dirty = false;
         }
     }
 
