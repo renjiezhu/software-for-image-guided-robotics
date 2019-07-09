@@ -1,11 +1,11 @@
 /*
  * Software Interface for Image Guided Robotics
  * 
- * Needle insertion control listenning
+ * Needle insertion control listening
  * 
  * By Renjie Zhu (rezhu@eng.ucsd.edu)
  * 
- * July 8rd, 2019
+ * July 8th, 2019
  * 
  */
 

@@ -1,7 +1,7 @@
 /*
  * Software Interface for Image Guided Robotics
  * 
- * Needle position control listenning
+ * Needle position control listening
  * 
  * By Renjie Zhu (rezhu@eng.ucsd.edu)
  * 
