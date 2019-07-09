@@ -7,7 +7,7 @@ ROS software controlling a surgical robot (lung biopsy).
 | | + | - |
 |--:|:-:|:-:|
 |&#948;x|&#8593;|&#8595;|
-|&#948;y|&#8592;|&#8594;|
+|&#948;y|&#8594;|&#8592;|
 |&#948;z|z|x|
 |&#948;roll|r|f|
 |&#948;pitch|t|g|

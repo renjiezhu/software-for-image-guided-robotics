@@ -1,0 +1,20 @@
+<launch>
+  <!-- local machine already has a definition by default.
+       This tag overrides the default definition with
+       specific ROS_ROOT and ROS_PACKAGE_PATH values -->
+  <!-- <machine name="local_alt" address="localhost" default="true" ros-root="/u/user/ros/ros/" ros-package-path="/u/user/ros/ros-pkg" /> -->
+  <!-- a basic listener node -->
+  <node name="python_listener" pkg="software_interface" type="robot_control_listener_python.py" args="--test" respawn="true"/>
+  <!-- pass args to the listener node -->
+  <node name="keyboard_input" pkg="software_interface" type="robot_control_key" args="--test" respawn="true"/>
+  <!-- a respawn-able listener node -->
+  <!-- <node name="listener-3" pkg="rospy_tutorials" type="listener" respawn="true" /> -->
+  <!-- start listener node in the 'wg1' namespace -->
+  <!-- <node ns="wg1" name="listener-wg1" pkg="rospy_tutorials" type="listener" respawn="true" /> -->
+  <!-- start a group of nodes in the 'wg2' namespace -->
+  <!-- <group ns="wg2"> -->
+    <!-- remap applies to all future statements in this scope. -->
+    <!-- <remap from="chatter" to="hello"/> -->
+
+  <!-- </group> -->
+</launch>
