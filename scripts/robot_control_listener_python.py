@@ -2,31 +2,70 @@
 import rospy
 import numpy as np
 from geometry_msgs.msg import Twist
+from std_msgs.msg import Float64
 
 
-def test_callback(data):
-    rospy.loginfo("test: x = %d" % data.linear.x)
-
-def vrep_callback(data):
-    pos_screen = np.array([data.linear.x, data.linear.y, data.linear.z])
-    ori_screen = np.array([data.angular.x, data.angular.y, data.angular.z])
-    rospy.logdebug(pos_screen)
-    rospy.logdebug(ori_screen)
-
-    pos_robot = np.array([pos_screen[1]*-1, pos_screen[0], pos_screen[2]])
-    ori_robot = np.array([ori_screen[1]*-1, ori_screen[0], ori_screen[2]])
-
-    # call vrep set
+class RobotState:
+    """
+    A class containing the current robot state
+    """
 
 
+    def __init__(self):
 
-def listener():
-    rospy.init_node('robot_control_listener_python', anonymous=True)
-    rospy.Subscriber("robot_movement", Twist, vrep_callback)
+        self.pos = np.zeros(3)
+        self.ori = np.zeros(3)
+
+        self.needle_pos = 0.0
+
+    def needle_retracted(self):
+        """
+        return if the needle is retracted
+        """
+        return self.needle_pos < 1e-5 and self.needle_pos >= 0
+
+    def robot_pos_callback(self, data):
+        """
+        update robot pos and ori with given keyboard instructions
+        """
+        
+        if self.needle_retracted():
+
+            self.pos[0] -= data.linear.y
+            self.pos[1] += data.linear.x
+            self.pos[2] += data.linear.z
+
+            self.ori[0] -= data.angular.y
+            self.ori[1] += data.angular.x
+            self.ori[2] += data.angular.z
+
+            rospy.loginfo(self.pos)
+            rospy.loginfo(self.ori)
+
+        else:
+            rospy.logwarn("Needle (pos=%.1f) not retracted, cannot move robot." % self.needle_pos)
+
+
+    def needle_pos_callback(self, data):
+
+        if self.needle_retracted() and data.data < 0:
+            rospy.logwarn("Needle fully retracted.")
+        else: 
+            self.needle_pos += data.data
+            rospy.loginfo(self.needle_pos)
+
+
+def listener(robot):
+    rospy.init_node("robot_control_listener_python", anonymous=True)
+    rospy.Subscriber("needle_insertion", Float64, robot.needle_pos_callback)
+    rospy.Subscriber("robot_movement", Twist, robot.robot_pos_callback)
     
-
+    
     rospy.spin()
 
 
 if __name__ == "__main__":
-    listener()
+
+    robot = RobotState()
+
+    listener(robot)

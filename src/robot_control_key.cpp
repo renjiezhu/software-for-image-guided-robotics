@@ -126,82 +126,124 @@ void RobotControlKey::keyLoop()
         switch (c)
         {
         case KEYCODE_L:
-            --x;
+            // --x;
+            x=-1;y=0;z=0;
+            roll=0;pitch=0;yaw=0;
+            z_needle=0;
             ROS_DEBUG("X - ,   x=%1d", (int)x);
             dirty = true;
             break;
         case KEYCODE_R:
-            ++x;
+            // ++x;
+            x=1;y=0;z=0;
+            roll=0;pitch=0;yaw=0;
+            z_needle=0;
             ROS_DEBUG("X + ,   x=%1d", (int)x);
             dirty = true;
             break;
         case KEYCODE_U:
-            ++y;
+            // ++y;
+            x=0;y=1;z=0;
+            roll=0;pitch=0;yaw=0;
+            z_needle=0;
             ROS_DEBUG("Y + ,   y=%1d", (int)y);
             dirty = true;
             break;
         case KEYCODE_D:
-            --y;
+            // --y;
+            x=0;y=-1;z=0;
+            roll=0;pitch=0;yaw=0;
+            z_needle=0;
             ROS_DEBUG("Y - ,   y=%1d", (int)y);
             dirty = true;
             break;
         case 'i':
         case 'I':
-            ++z_needle;
+            // ++z_needle;
+            x=0;y=0;z=0;
+            roll=0;pitch=0;yaw=0;
+            z_needle=1;
             ROS_DEBUG("INS,    n=%1d", (int)z_needle);
             needle_dirty = true;
             break;
         case 'o':
         case 'O':
-            --z_needle;
+            // --z_needle;
+            x=0;y=0;z=0;
+            roll=0;pitch=0;yaw=0;
+            z_needle=-1;
             ROS_DEBUG("EXT,    n=%1d", (int)z_needle);
             needle_dirty = true;
             break;
         case 'z':
         case 'Z':
-            ++z;
+            // ++z;
+            x=0;y=0;z=1;
+            roll=0;pitch=0;yaw=0;
+            z_needle=0;
             ROS_DEBUG("Z + ,   z=%1d", (int)z);
             dirty = true;
             break;
         case 'x':
         case 'X':
-            --z;
+            // --z;
+            x=0;y=0;z=-1;
+            roll=0;pitch=0;yaw=0;
+            z_needle=0;
             ROS_DEBUG("Z - ,   z=%1d", (int)z);
             dirty = true;
             break;
         case 'r':
         case 'R':
-            ++roll;
+            // ++roll;
+            x=0;y=0;z=0;
+            roll=1;pitch=0;yaw=0;
+            z_needle=0;
             ROS_DEBUG("R + ,   r=%1d", (int)roll);
             dirty = true;
             break;
         case 'f':
         case 'F':
-            --roll;
+            // --roll;
+            x=0;y=0;z=0;
+            roll=-1;pitch=0;yaw=0;
+            z_needle=0;
             ROS_DEBUG("R - ,   r=%1d", (int)roll);
             dirty = true;
             break;
         case 't':
         case 'T':
-            ++pitch;
+            // ++pitch;
+            x=0;y=0;z=0;
+            roll=0;pitch=1;yaw=0;
+            z_needle=0;
             ROS_DEBUG("P + ,   p=%1d", (int)pitch);
             dirty = true;
             break;
         case 'g':
         case 'G':
-            --pitch;
+            // --pitch;
+            x=0;y=0;z=0;
+            roll=0;pitch=-1;yaw=0;
+            z_needle=0;
             ROS_DEBUG("P - ,   p=%1d", (int)pitch);
             dirty = true;
             break;
         case 'y':
         case 'Y':
-            ++yaw;
+            // ++yaw;
+            x=0;y=0;z=0;
+            roll=0;pitch=0;yaw=1;
+            z_needle=0;
             ROS_DEBUG("W + ,   w=%1d", (int)yaw);
             dirty = true;
             break;
         case 'h':
         case 'H':
-            --yaw;
+            // --yaw;
+            x=0;y=0;z=0;
+            roll=0;pitch=0;yaw=-1;
+            z_needle=0;
             ROS_DEBUG("W - ,   w=%1d", (int)yaw);
             dirty = true;
             break;
