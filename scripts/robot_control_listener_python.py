@@ -1,8 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 import numpy as np
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Float64
+
+import sys
+sys.path.append("/home/renjie/Documents/igr/src/software_interface/")
+from pyrep import PyRep
+from vrep_robot_control.ct_robot_control import perform_IK_via_vrep
+from vrep_robot_control.arm import CtRobot
 
 
 class RobotState:
@@ -13,13 +19,22 @@ class RobotState:
 
     def __init__(self):
 
-        self.pos = np.zeros(3)
+        self.pos = np.array([-0.35, -0.402, 0.15])
         self.ori = np.zeros(3)
 
         self.needle_pos = 0.0
 
         self.dirty = False
         self.needle_dirty = False
+
+        self.pr = PyRep()
+
+        self.pr.launch("/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/arm.ttt")
+        self.dt = 0.01
+        self.pr.set_simulation_timestep(self.dt)
+        self.pr.start()
+
+        self.ct_robot = CtRobot()
 
     def needle_retracted(self):
         """
@@ -34,9 +49,9 @@ class RobotState:
         
         if self.needle_retracted():
 
-            self.pos[0] -= data.linear.y
-            self.pos[1] += data.linear.x
-            self.pos[2] += data.linear.z
+            self.pos[0] -= data.linear.y / 1000
+            self.pos[1] += data.linear.x / 1000
+            self.pos[2] += data.linear.z / 1000
 
             self.ori[0] -= data.angular.y
             self.ori[1] += data.angular.x
@@ -46,6 +61,8 @@ class RobotState:
 
             rospy.loginfo(self.pos)
             rospy.loginfo(self.ori)
+            
+            self.update_vrep()
 
         else:
             rospy.logwarn("Needle (pos=%.1f) not retracted, cannot move robot." % self.needle_pos)
@@ -63,6 +80,8 @@ class RobotState:
             self.needle_dirty = True
             rospy.loginfo(self.needle_pos)
 
+            self.update_vrep()
+
 
     def update_state(self):
         """
@@ -76,12 +95,17 @@ class RobotState:
         """
         update vrep for ik
         """
-        if dirty:
-            pass
-        elif needle_dirty:
-            pass
+        if self.dirty:
+            perform_IK_via_vrep(self.ct_robot, self.pos.tolist(), self.ori.tolist(), self.pr, self.dt)
+            self.dirty=False
+            rospy.loginfo("updating robot position")
+        elif self.needle_dirty:
+            self.needle_dirty=False
+            rospy.loginfo("updating needle insertion")
         else:
             pass
+        
+
 
 
 
