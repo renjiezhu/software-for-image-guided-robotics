@@ -41,7 +41,7 @@ def perform_IK_via_vrep(robot: CtRobot, pos: list, ori: list, pr: PyRep, dt: flo
     er = reach_target(robot)
     tmp = np.zeros(robot._num_joints)
     
-    while er[6]>5e-4 and er[7]>6e-2 and t<1:
+    while er[6]>5e-4 and t<0.02: #and er[7]>6e-2
         pr.step()
         for i in range(robot._num_joints):
             tmp[i] = robot.joints[i].get_joint_position()
@@ -57,7 +57,7 @@ def perform_IK_via_vrep(robot: CtRobot, pos: list, ori: list, pr: PyRep, dt: flo
         if er[7]>6e-2:
             print('Unable to reach target with respect to orientation, Error is %.4f' % er[7])
             
-    return np.asarray(joint_pos)
+    return np.asarray(joint_pos[-1])
     
             
 

@@ -1,5 +1,5 @@
 <launch>
-  <node name="python_listener" pkg="software_interface" type="robot_control_listener_python.py" output="screen" />
+  <node name="python_listener" pkg="software_interface" type="robot_control_listener_python.py" output="screen"/>
   <!-- <node name="python_listener" pkg="software_interface" type="robot_control_listener_python.py" /> -->
 
   <node name="keyboard_input" pkg="software_interface" type="robot_control_key" output="screen"/>

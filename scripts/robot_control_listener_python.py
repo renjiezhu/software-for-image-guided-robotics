@@ -19,7 +19,7 @@ class RobotState:
 
     def __init__(self):
 
-        self.pos = np.array([-0.35, -0.402, 0.15])
+        self.pos = np.array([-0.5, -0.6, 0.5])
         self.ori = np.zeros(3)
 
         self.needle_pos = 0.0
@@ -35,6 +35,11 @@ class RobotState:
         self.pr.start()
 
         self.ct_robot = CtRobot()
+
+    def __del__(self):
+
+        self.pr.shutdown()
+
 
     def needle_retracted(self):
         """

@@ -34,6 +34,7 @@ class RobotControlKey
 public:
     RobotControlKey();
     void keyLoop();
+    void returnZero();
 
 private:
     ros::NodeHandle nh;
@@ -127,41 +128,31 @@ void RobotControlKey::keyLoop()
         {
         case KEYCODE_L:
             // --x;
-            x=-1;y=0;z=0;
-            roll=0;pitch=0;yaw=0;
-            z_needle=0;
+            x=-1;
             ROS_DEBUG("X - ,   x=%1d", (int)x);
             dirty = true;
             break;
         case KEYCODE_R:
             // ++x;
-            x=1;y=0;z=0;
-            roll=0;pitch=0;yaw=0;
-            z_needle=0;
+            x=1;
             ROS_DEBUG("X + ,   x=%1d", (int)x);
             dirty = true;
             break;
         case KEYCODE_U:
             // ++y;
-            x=0;y=1;z=0;
-            roll=0;pitch=0;yaw=0;
-            z_needle=0;
+            y=1;
             ROS_DEBUG("Y + ,   y=%1d", (int)y);
             dirty = true;
             break;
         case KEYCODE_D:
             // --y;
-            x=0;y=-1;z=0;
-            roll=0;pitch=0;yaw=0;
-            z_needle=0;
+            y=-1;
             ROS_DEBUG("Y - ,   y=%1d", (int)y);
             dirty = true;
             break;
         case 'i':
         case 'I':
             // ++z_needle;
-            x=0;y=0;z=0;
-            roll=0;pitch=0;yaw=0;
             z_needle=1;
             ROS_DEBUG("INS,    n=%1d", (int)z_needle);
             needle_dirty = true;
@@ -169,8 +160,6 @@ void RobotControlKey::keyLoop()
         case 'o':
         case 'O':
             // --z_needle;
-            x=0;y=0;z=0;
-            roll=0;pitch=0;yaw=0;
             z_needle=-1;
             ROS_DEBUG("EXT,    n=%1d", (int)z_needle);
             needle_dirty = true;
@@ -178,72 +167,56 @@ void RobotControlKey::keyLoop()
         case 'z':
         case 'Z':
             // ++z;
-            x=0;y=0;z=1;
-            roll=0;pitch=0;yaw=0;
-            z_needle=0;
+            z=1;
             ROS_DEBUG("Z + ,   z=%1d", (int)z);
             dirty = true;
             break;
         case 'x':
         case 'X':
             // --z;
-            x=0;y=0;z=-1;
-            roll=0;pitch=0;yaw=0;
-            z_needle=0;
+            z=-1;
             ROS_DEBUG("Z - ,   z=%1d", (int)z);
             dirty = true;
             break;
         case 'r':
         case 'R':
             // ++roll;
-            x=0;y=0;z=0;
-            roll=1;pitch=0;yaw=0;
-            z_needle=0;
+            roll=1;
             ROS_DEBUG("R + ,   r=%1d", (int)roll);
             dirty = true;
             break;
         case 'f':
         case 'F':
             // --roll;
-            x=0;y=0;z=0;
-            roll=-1;pitch=0;yaw=0;
-            z_needle=0;
+            roll=-1;
             ROS_DEBUG("R - ,   r=%1d", (int)roll);
             dirty = true;
             break;
         case 't':
         case 'T':
             // ++pitch;
-            x=0;y=0;z=0;
-            roll=0;pitch=1;yaw=0;
-            z_needle=0;
+            pitch = 1;
             ROS_DEBUG("P + ,   p=%1d", (int)pitch);
             dirty = true;
             break;
         case 'g':
         case 'G':
             // --pitch;
-            x=0;y=0;z=0;
-            roll=0;pitch=-1;yaw=0;
-            z_needle=0;
+            pitch = -1;
             ROS_DEBUG("P - ,   p=%1d", (int)pitch);
             dirty = true;
             break;
         case 'y':
         case 'Y':
             // ++yaw;
-            x=0;y=0;z=0;
-            roll=0;pitch=0;yaw=1;
-            z_needle=0;
+            yaw = 1;
             ROS_DEBUG("W + ,   w=%1d", (int)yaw);
             dirty = true;
             break;
         case 'h':
         case 'H':
             // --yaw;
-            x=0;y=0;z=0;
-            roll=0;pitch=0;yaw=-1;
-            z_needle=0;
+            yaw = -1;
             ROS_DEBUG("W - ,   w=%1d", (int)yaw);
             dirty = true;
             break;
@@ -264,14 +237,22 @@ void RobotControlKey::keyLoop()
         {
             robot_pos_pub.publish(input);
             dirty = false;
+            returnZero();
         }
 
         if (needle_dirty)
         {
             needle_pub.publish(input_n);
             needle_dirty = false;
+            returnZero();
         }
     }
 
     return;
+}
+
+void RobotControlKey::returnZero() {
+    x=0;y=0;z=0;
+    roll=0;pitch=0;yaw=0;
+    z_needle=0;
 }
