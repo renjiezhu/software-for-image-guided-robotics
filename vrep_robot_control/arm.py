@@ -19,12 +19,12 @@ class CtRobot(RobotComponent):
         joint_names = []
         for i in range(num_joints):
             if joint_type[i] == 'p':
-                joint_names.append('j%d_%s') % (i+1, 'prismatic')
+                joint_names.append('j%d_%s' % (i+1, 'prismatic'))
             elif joint_type[i] == 'r':
-                joint_names.append('j%d_%s') % (i+1, 'revolute')
+                joint_names.append('j%d_%s' % (i+1, 'revolute'))
         super().__init__(count, name, joint_names, base_name)
 
-        part_names = ['reference_frame_j%d' % (i+1) for i in range(num_joints)]
+        part_names = ['arm%d_dynamic' % (i+1) for i in range(num_joints)]
         self.arms = [Shape(pname + suffix) for pname in part_names]
         frame_names = ['reference_frame_j%d' % (i+1) for i in range(num_joints)]
         frame_names.insert(0, 'reference_frame_base')

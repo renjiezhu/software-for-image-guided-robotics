@@ -25,15 +25,15 @@ def IK_via_vrep(robot: CtRobot, pos: list, ori: list, pr: PyRep, dt: float):
     pos = [x, y, z], ori = [alpha, beta, gamma] are the configuration parameter of needle frame with respect to 
     world frame.
     '''
-    for i in range(ct_robot._num_joints):
-        ct_robot.joints[i].set_joint_mode(JointMode.IK)
-        ct_robot.arms[i].set_dynamic(False)
+    for i in range(robot._num_joints):
+        robot.joints[i].set_joint_mode(JointMode.IK)
+        robot.arms[i].set_dynamic(False)
             
     robot._ik_target.set_position(pos)
     robot._ik_target.set_orientation(ori)
     pr.step()
     
-    joint_pos = []
+    # joint_pos = []
     t = 0
     er = reach_target(robot)
     tmp = np.zeros(robot._num_joints)
@@ -41,9 +41,9 @@ def IK_via_vrep(robot: CtRobot, pos: list, ori: list, pr: PyRep, dt: float):
     while er[6]>1e-4 and t<4*dt and er[7]>3e-3: 
         # Precision is set to 0.1 mm and 0.1 deg in terms of pos and ori respectively 
         pr.step()
-        for i in range(robot._num_joints):
-            tmp[i] = robot.joints[i].get_joint_position()
-        joint_pos.append(tmp)
+        # for i in range(robot._num_joints):
+        #     tmp[i] = robot.joints[i].get_joint_position()
+        # joint_pos.append(tmp)
         t += dt
         er = reach_target(robot)
         
@@ -60,7 +60,7 @@ def IK_via_vrep(robot: CtRobot, pos: list, ori: list, pr: PyRep, dt: float):
             print('error on y-axis: %.6f' % er[4])
             print('error on z-axis: %.6f' % er[5])
             print('Unable to reach target with respect to orientation, Error is %.6f' % er[7])
-    return np.asarray(joint_pos[-1])
+    # return np.asarray(joint_pos[-1])
     
             
 

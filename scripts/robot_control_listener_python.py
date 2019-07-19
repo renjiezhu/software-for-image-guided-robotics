@@ -20,7 +20,7 @@ class RobotState:
 
     def __init__(self):
 
-        self.pos = np.array([-0.5, -0.6, 0.5])
+        self.pos = np.array([0.0011, -0.6585, 0.2218])
         self.ori = np.zeros(3)
 
         self.needle_pos = 0.0
@@ -38,8 +38,9 @@ class RobotState:
         self.ct_robot = CtRobot()
 
     def __del__(self):
-
+        print("V-REP shutting down.")
         self.pr.shutdown()
+        print("DONE")
 
 
     def needle_retracted(self):
@@ -59,9 +60,9 @@ class RobotState:
             self.pos[1] += data.linear.x / 1000
             self.pos[2] += data.linear.z / 1000
 
-            self.ori[0] -= data.angular.y
-            self.ori[1] += data.angular.x
-            self.ori[2] += data.angular.z
+            self.ori[0] -= data.angular.y * np.pi / 180
+            self.ori[1] += data.angular.x * np.pi / 180
+            self.ori[2] += data.angular.z * np.pi / 180
 
             self.dirty = True
 
