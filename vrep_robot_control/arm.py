@@ -25,6 +25,7 @@ class CtRobot(RobotComponent):
         super().__init__(count, name, joint_names, base_name)
 
         part_names = ['arm%d_dynamic' % (i+1) for i in range(num_joints)]
+        part_names.insert(3, 'arm3_dynamic_out')
         self.arms = [Shape(pname + suffix) for pname in part_names]
         frame_names = ['reference_frame_j%d' % (i+1) for i in range(num_joints)]
         frame_names.insert(0, 'reference_frame_base')

@@ -5,7 +5,7 @@ from geometry_msgs.msg import Twist
 from std_msgs.msg import Float64
 
 import sys
-sys.path.append("/home/renjie/Documents/igr/src/software_interface/")
+sys.path.append("/home/acrmri/Documents/igr/src/software_interface/")
 # sys.path.append("/home/acrmri/homesoftware_interface/")
 from pyrep import PyRep
 from vrep_robot_control.ct_robot_control import IK_via_vrep
@@ -30,12 +30,14 @@ class RobotState:
 
         self.pr = PyRep()
 
-        self.pr.launch("/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt")
+        self.pr.launch("/home/acrmri/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt")
         self.dt = 0.01
         self.pr.set_simulation_timestep(self.dt)
         self.pr.start()
 
         self.ct_robot = CtRobot()
+        self.default_pos = self.ct_robot.get_joint_positions()
+
 
     def __del__(self):
         print("V-REP shutting down.")
