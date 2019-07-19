@@ -6,8 +6,9 @@ from std_msgs.msg import Float64
 
 import sys
 sys.path.append("/home/renjie/Documents/igr/src/software_interface/")
+# sys.path.append("/home/acrmri/homesoftware_interface/")
 from pyrep import PyRep
-from vrep_robot_control.ct_robot_control import perform_IK_via_vrep
+from vrep_robot_control.ct_robot_control import IK_via_vrep
 from vrep_robot_control.arm import CtRobot
 
 
@@ -29,7 +30,7 @@ class RobotState:
 
         self.pr = PyRep()
 
-        self.pr.launch("/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/arm.ttt")
+        self.pr.launch("/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt")
         self.dt = 0.01
         self.pr.set_simulation_timestep(self.dt)
         self.pr.start()
@@ -101,7 +102,7 @@ class RobotState:
         update vrep for ik
         """
         if self.dirty:
-            perform_IK_via_vrep(self.ct_robot, self.pos.tolist(), self.ori.tolist(), self.pr, self.dt)
+            IK_via_vrep(self.ct_robot, self.pos.tolist(), self.ori.tolist(), self.pr, self.dt)
             self.dirty=False
             rospy.loginfo("updating robot position")
         elif self.needle_dirty:

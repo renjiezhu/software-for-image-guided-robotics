@@ -20,17 +20,14 @@ def reach_target(robot: CtRobot):
     
     return error
 
-def perform_IK_via_vrep(robot: CtRobot, pos: list, ori: list, pr: PyRep, dt: float):
+def IK_via_vrep(robot: CtRobot, pos: list, ori: list, pr: PyRep, dt: float):
     '''
     pos = [x, y, z], ori = [alpha, beta, gamma] are the configuration parameter of needle frame with respect to 
     world frame.
     '''
-    # for i in range(ct_robot._num_joints):
-        # For now only enable the in-bore 4 DOF
-        # if i in [0, 1, 2, 3]:
-            # ct_robot.joints[i].set_joint_mode(JointMode.PASSIVE)
-        # if i in [4, 5, 6, 7]:
-            # ct_robot.joints[i].set_joint_mode(JointMode.IK)
+    for i in range(ct_robot._num_joints):
+        ct_robot.joints[i].set_joint_mode(JointMode.IK)
+        ct_robot.arms[i].set_dynamic(False)
             
     robot._ik_target.set_position(pos)
     robot._ik_target.set_orientation(ori)
@@ -41,7 +38,8 @@ def perform_IK_via_vrep(robot: CtRobot, pos: list, ori: list, pr: PyRep, dt: flo
     er = reach_target(robot)
     tmp = np.zeros(robot._num_joints)
     
-    while er[6]>5e-4 and t<0.02: #and er[7]>6e-2
+    while er[6]>1e-4 and t<4*dt and er[7]>3e-3: 
+        # Precision is set to 0.1 mm and 0.1 deg in terms of pos and ori respectively 
         pr.step()
         for i in range(robot._num_joints):
             tmp[i] = robot.joints[i].get_joint_position()
@@ -49,14 +47,19 @@ def perform_IK_via_vrep(robot: CtRobot, pos: list, ori: list, pr: PyRep, dt: flo
         t += dt
         er = reach_target(robot)
         
-    if er[6]<5e-4 and er[7]<6e-2:
+    if er[6]<1.7e-4 and er[7]<3e-3:
         print('Reached Target')
     else:
-        if er[6]>5e-4:
+        if er[6]>1.7e-4:
+            print('error on x-axis: %.6f' % er[0])
+            print('error on y-axis: %.6f' % er[1])
+            print('error on z-axis: %.6f' % er[2])
             print('Unable to reach target with respect to position, Error is %.6f' % er[6])
-        if er[7]>6e-2:
-            print('Unable to reach target with respect to orientation, Error is %.4f' % er[7])
-            
+        if er[7]>3e-3:
+            print('error on x-axis: %.6f' % er[3])
+            print('error on y-axis: %.6f' % er[4])
+            print('error on z-axis: %.6f' % er[5])
+            print('Unable to reach target with respect to orientation, Error is %.6f' % er[7])
     return np.asarray(joint_pos[-1])
     
             
