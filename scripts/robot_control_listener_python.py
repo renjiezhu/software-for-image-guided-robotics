@@ -7,9 +7,9 @@ from std_msgs.msg import Float64
 import sys
 sys.path.append("/home/renjie/Documents/igr/src/software_interface/")
 # sys.path.append("/home/acrmri/homesoftware_interface/")
-# from pyrep import PyRep
-# from vrep_robot_control.ct_robot_control import IK_via_vrep
-# from vrep_robot_control.arm import CtRobot
+from pyrep import PyRep
+from vrep_robot_control.ct_robot_control import IK_via_vrep
+from vrep_robot_control.arm import CtRobot
 
 
 class RobotState:
@@ -20,6 +20,9 @@ class RobotState:
 
     def __init__(self):
 
+        rospy.init_node("robot_control_listener_python", anonymous=True)
+        # rospy.on_shutdown(self.shutdown_vrep)
+
         self.pos = np.array([0.0011, -0.6585, 0.2218])
         self.ori = np.zeros(3)
 
@@ -28,20 +31,21 @@ class RobotState:
         self.dirty = False
         self.needle_dirty = False
 
-        # self.pr = PyRep()
+        self.pr = PyRep()
 
-        # self.pr.launch("/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt")
-        # self.dt = 0.01
-        # self.pr.set_simulation_timestep(self.dt)
-        # self.pr.start()
+        self.pr.launch("/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt")
+        self.dt = 0.01
+        self.pr.set_simulation_timestep(self.dt)
+        self.pr.start()
 
-        # self.ct_robot = CtRobot()
+        self.ct_robot = CtRobot()
 
-    # def shutdown_vrep(self):
-    #     self.pr.stop()
-    #     print("V-REP shutting down.")
-    #     self.pr.shutdown()
-    #     print("DONE")
+
+    def shutdown_vrep(self):
+        self.pr.stop()
+        print("V-REP shutting down.")
+        self.pr.shutdown()
+        print("DONE")
 
 
     def needle_retracted(self):
@@ -70,7 +74,7 @@ class RobotState:
             rospy.loginfo(self.pos)
             rospy.loginfo(self.ori)
             
-            # self.update_vrep()
+            self.update_vrep()
 
         else:
             rospy.logwarn("Needle (pos=%.1f) not retracted, cannot move robot." % self.needle_pos)
@@ -88,7 +92,7 @@ class RobotState:
             self.needle_dirty = True
             rospy.loginfo(self.needle_pos)
 
-            # self.update_vrep()
+            self.update_vrep()
 
 
     def update_state(self):
@@ -98,12 +102,12 @@ class RobotState:
         rospy.Subscriber("needle_insertion", Float64, self.needle_pos_callback)
         rospy.Subscriber("robot_movement", Twist, self.robot_pos_callback)
 
-        # try:
-        #     rospy.on_shutdown(self.shutdown_vrep)
-        # finally:
-        #     self.shutdown_vrep()
 
-        rospy.spin()
+        try:
+            rospy.spin()
+        except KeyboardInterrupt:
+            print("hello I am in keyboard interrupt.")
+            self.shutdown_vrep()
 
 
     def update_vrep(self):
@@ -111,7 +115,7 @@ class RobotState:
         update vrep for ik
         """
         if self.dirty:
-            # IK_via_vrep(self.ct_robot, self.pos.tolist(), self.ori.tolist(), self.pr, self.dt)
+            IK_via_vrep(self.ct_robot, self.pos.tolist(), self.ori.tolist(), self.pr, self.dt)
             self.dirty=False
             rospy.loginfo("updating robot position")
         elif self.needle_dirty:
@@ -125,8 +129,6 @@ class RobotState:
 
 
 if __name__ == "__main__":
-
-    rospy.init_node("robot_control_listener_python", anonymous=True)
 
     robot = RobotState()
 
