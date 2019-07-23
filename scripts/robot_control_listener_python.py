@@ -4,6 +4,7 @@ import numpy as np
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Float64
 
+import signal
 import sys
 sys.path.append("/home/renjie/Documents/igr/src/software_interface/")
 # sys.path.append("/home/acrmri/homesoftware_interface/")
@@ -43,10 +44,15 @@ class RobotState:
 
     def shutdown_vrep(self):
         self.pr.stop()
-        print("V-REP shutting down.")
+        rospy.loginfo("V-REP shutting down.")
         self.pr.shutdown()
-        print("DONE")
+        rospy.loginfo("DONE")
 
+    ## signal capture (sigint) ##
+    def signal_handler(self, sig, frame):
+        rospy.loginfo("Calling exit for pyrep")
+        self.shutdown_vrep()
+        rospy.signal_shutdown("from signal_handler")
 
     def needle_retracted(self):
         """
@@ -102,13 +108,8 @@ class RobotState:
         rospy.Subscriber("needle_insertion", Float64, self.needle_pos_callback)
         rospy.Subscriber("robot_movement", Twist, self.robot_pos_callback)
 
-
-        try:
-            rospy.spin()
-        except KeyboardInterrupt:
-            print("hello I am in keyboard interrupt.")
-            self.shutdown_vrep()
-
+        signal.signal(signal.SIGINT, self.signal_handler)
+        rospy.spin()
 
     def update_vrep(self):
         """
