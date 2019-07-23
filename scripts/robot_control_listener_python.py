@@ -5,11 +5,11 @@
  * Listerner 
  * 
  * Topics Published:
- *
+ * * robot_status_TWIST
  *
  * Topics Subscribed:
- * * robot_pos_pub
- * * needle_pub
+ * * robot_movement
+ * * needle_insertion
  * 
  * By Renjie Zhu (rezhu@eng.ucsd.edu)
  * 
@@ -39,22 +39,29 @@ class RobotState:
     def __init__(self):
 
         rospy.init_node("robot_control_listener_python", anonymous=True)
+        rospy.loginfo("V-REP update node is initialized...")
 
+        # keep track of current robot position, orientation and needle position
         self.pos = [0.0011, -0.6585, 0.2218]
         self.ori = [0.0, 0.0, 0.0]
-
         self.needle_pos = 0.0
 
+        # publisher of the current robot position in a format of geometry_msgs::Twist
+        self.robot_status_pub = rospy.Publisher("robot_status_TWIST", Twist, queue_size=2)
+        self.robot_status = Twist()
+
+        # dirty markers
         self.dirty = False
         self.needle_dirty = False
 
+        # pyrep instance
         self.pr = PyRep()
-
         self.pr.launch("/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt")
         self.dt = 0.01
         self.pr.set_simulation_timestep(self.dt)
         self.pr.start()
 
+        # pyrep robot model instance
         self.ct_robot = CtRobot()
 
 
@@ -105,6 +112,8 @@ class RobotState:
             
             self.update_vrep()
 
+            self.publish_robot_status()
+
         else:
             rospy.logwarn("Needle (pos=%.1f) not retracted, cannot move robot." % self.needle_pos)
 
@@ -149,6 +158,20 @@ class RobotState:
             pass
         
 
+    def publish_robot_status(self):
+        """
+        update robot status into a Twist form, and publish over a topic
+        """
+        
+        self.robot_status.linear.x = self.pos[0]
+        self.robot_status.linear.y = self.pos[1]
+        self.robot_status.linear.z = self.pos[2]
+
+        self.robot_status.angular.x = self.ori[0]
+        self.robot_status.angular.y = self.ori[1]
+        self.robot_status.angular.z = self.ori[2]
+
+        self.robot_status_pub.publish(self.robot_status)        
 
 
 

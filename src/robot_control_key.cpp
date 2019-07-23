@@ -4,8 +4,8 @@
  * Keyboard control 
  * 
  * Topics Published:
- * * robot_pos_pub
- * * needle_pub
+ * * robot_movement
+ * * needle_insertion
  * 
  * Topics Subscribed:
  * 
