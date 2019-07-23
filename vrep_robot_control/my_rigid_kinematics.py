@@ -45,7 +45,7 @@ class dh_robot_config:
             theta = self.theta[i]
             a = self.a[i]
             D = self.D[i]
-                  
+            alpha = self.alpha[i]
             
             if self.jointType[i] == 'r':
                 theta += self.q[i]
