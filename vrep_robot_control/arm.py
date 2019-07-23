@@ -30,6 +30,10 @@ class CtRobot(RobotComponent):
         frame_names = ['reference_frame_j%d' % (i+1) for i in range(num_joints)]
         frame_names.insert(0, 'reference_frame_base')
         self.frames = [Dummy(fname + suffix) for fname in frame_names]
+        DH_frame_names = ['DH_frame_j%d' % (i+1) for i in range(num_joints)]
+        DH_frame_names.insert(0, 'DH_frame_base')
+        self.DH_frames = [Dummy(dhfname + suffix) for dhfname in DH_frame_names]
+       
         
         # Used for motion planning
         self.max_velocity = max_velocity
