@@ -4,6 +4,7 @@ import numpy as np
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Float64
 
+import signal
 import sys
 sys.path.append("/home/renjie/Documents/igr/src/software_interface/")
 # sys.path.append("/home/acrmri/homesoftware_interface/")
@@ -19,6 +20,9 @@ class RobotState:
 
 
     def __init__(self):
+
+        rospy.init_node("robot_control_listener_python", anonymous=True)
+        # rospy.on_shutdown(self.shutdown_vrep)
 
         self.pos = np.array([0.0011, -0.6585, 0.2218])
         self.ori = np.zeros(3)
@@ -37,11 +41,18 @@ class RobotState:
 
         self.ct_robot = CtRobot()
 
-    def __del__(self):
-        print("V-REP shutting down.")
-        self.pr.shutdown()
-        print("DONE")
 
+    def shutdown_vrep(self):
+        self.pr.stop()
+        rospy.loginfo("V-REP shutting down.")
+        self.pr.shutdown()
+        rospy.loginfo("DONE")
+
+    ## signal capture (sigint) ##
+    def signal_handler(self, sig, frame):
+        rospy.loginfo("Calling exit for pyrep")
+        self.shutdown_vrep()
+        rospy.signal_shutdown("from signal_handler")
 
     def needle_retracted(self):
         """
@@ -97,6 +108,8 @@ class RobotState:
         rospy.Subscriber("needle_insertion", Float64, self.needle_pos_callback)
         rospy.Subscriber("robot_movement", Twist, self.robot_pos_callback)
 
+        signal.signal(signal.SIGINT, self.signal_handler)
+        rospy.spin()
 
     def update_vrep(self):
         """
@@ -118,9 +131,7 @@ class RobotState:
 
 if __name__ == "__main__":
 
-    rospy.init_node("robot_control_listener_python", anonymous=True)
-
     robot = RobotState()
+
     robot.update_state()
 
-    rospy.spin()
