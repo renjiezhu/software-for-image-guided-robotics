@@ -3,9 +3,12 @@
  * 
  * Keyboard control 
  * 
- * Two Publishers:
+ * Topics Published:
  * * robot_pos_pub
  * * needle_pub
+ * 
+ * Topics Subscribed:
+ * 
  * 
  * By Renjie Zhu (rezhu@eng.ucsd.edu)
  * 
@@ -16,7 +19,6 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
 #include "std_msgs/Float64.h"
-#include "tf2/utils.h"
 #include "signal.h"
 #include "termios.h"
 #include "stdio.h"

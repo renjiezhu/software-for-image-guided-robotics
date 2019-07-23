@@ -1,4 +1,21 @@
 #!/usr/bin/env python3
+"""
+ * Software Interface for Image Guided Robotics
+ * 
+ * Listerner 
+ * 
+ * Topics Published:
+ *
+ *
+ * Topics Subscribed:
+ * * robot_pos_pub
+ * * needle_pub
+ * 
+ * By Renjie Zhu (rezhu@eng.ucsd.edu)
+ * 
+ * July 9th, 2019
+ * 
+ """
 import rospy
 import numpy as np
 from geometry_msgs.msg import Twist
@@ -22,10 +39,9 @@ class RobotState:
     def __init__(self):
 
         rospy.init_node("robot_control_listener_python", anonymous=True)
-        # rospy.on_shutdown(self.shutdown_vrep)
 
-        self.pos = np.array([0.0011, -0.6585, 0.2218])
-        self.ori = np.zeros(3)
+        self.pos = [0.0011, -0.6585, 0.2218]
+        self.ori = [0.0, 0.0, 0.0]
 
         self.needle_pos = 0.0
 
@@ -43,6 +59,9 @@ class RobotState:
 
 
     def shutdown_vrep(self):
+        """
+        shutdown vrep safely
+        """
         self.pr.stop()
         rospy.loginfo("V-REP shutting down.")
         self.pr.shutdown()
@@ -50,9 +69,13 @@ class RobotState:
 
     ## signal capture (sigint) ##
     def signal_handler(self, sig, frame):
+        """
+        safely shutdown vrep when control C is pressed
+        """
         rospy.loginfo("Calling exit for pyrep")
         self.shutdown_vrep()
         rospy.signal_shutdown("from signal_handler")
+
 
     def needle_retracted(self):
         """
@@ -116,7 +139,7 @@ class RobotState:
         update vrep for ik
         """
         if self.dirty:
-            IK_via_vrep(self.ct_robot, self.pos.tolist(), self.ori.tolist(), self.pr, self.dt)
+            IK_via_vrep(self.ct_robot, self.pos, self.ori, self.pr, self.dt)
             self.dirty=False
             rospy.loginfo("updating robot position")
         elif self.needle_dirty:
