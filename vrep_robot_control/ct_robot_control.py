@@ -25,10 +25,12 @@ def IK_via_vrep(robot: CtRobot, pos: list, ori: list, pr: PyRep, dt: float):
     pos = [x, y, z], ori = [alpha, beta, gamma] are the configuration parameter of needle frame with respect to 
     world frame.
     '''
-    for i in range(robot._num_joints):
+    for i in range(robot._num_joints-1):
         robot.joints[i].set_joint_mode(JointMode.IK)
         robot.arms[i].set_dynamic(False)
-            
+    robot.joints[-1].set_joint_mode(JointMode.PASSIVE)
+    robot.arms[-1].set_dynamic(False)
+
     robot._ik_target.set_position(pos)
     robot._ik_target.set_orientation(ori)
     pr.step()

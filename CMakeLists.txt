@@ -12,8 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   message_generation
-  tf2
-  tf2_ros
+  # tf2
+  # tf2_ros
 )
 
 ## System dependencies are found with CMake's conventions
@@ -116,8 +116,8 @@ catkin_package(
  roscpp 
  rospy 
  std_msgs
- tf2
- tf2_ros
+#  tf2
+#  tf2_ros
 #  DEPENDS 
 #  system_lib 
 )

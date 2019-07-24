@@ -5,11 +5,11 @@
  * Listerner 
  * 
  * Topics Published:
- *
+ * * robot_status_TRANSFORM
  *
  * Topics Subscribed:
- * * robot_pos_pub
- * * needle_pub
+ * * robot_movement
+ * * needle_insertion
  * 
  * By Renjie Zhu (rezhu@eng.ucsd.edu)
  * 
@@ -19,7 +19,10 @@
 import rospy
 import numpy as np
 from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Transform
 from std_msgs.msg import Float64
+
+import transforms3d.euler as euler
 
 import signal
 import sys
@@ -39,22 +42,33 @@ class RobotState:
     def __init__(self):
 
         rospy.init_node("robot_control_listener_python", anonymous=True)
+        rospy.loginfo("V-REP update node is initialized...")
 
+        # keep track of current robot position, orientation and needle position
         self.pos = [0.0011, -0.6585, 0.2218]
         self.ori = [0.0, 0.0, 0.0]
-
         self.needle_pos = 0.0
 
+        # to rotate purely in world frame orientation and needle frame position,
+        # 
+        self.transform = np.eye(3)  
+
+        # publisher of the current robot position in a format of geometry_msgs::Twist
+        self.robot_status_pub = rospy.Publisher("robot_status_TRANSFORM", Transform, queue_size=2)
+        self.robot_status = Transform()
+
+        # dirty markers
         self.dirty = False
         self.needle_dirty = False
 
+        # pyrep instance
         self.pr = PyRep()
-
         self.pr.launch("/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt")
         self.dt = 0.01
         self.pr.set_simulation_timestep(self.dt)
         self.pr.start()
 
+        # pyrep robot model instance
         self.ct_robot = CtRobot()
 
 
@@ -90,13 +104,39 @@ class RobotState:
         
         if self.needle_retracted():
 
+            # modify robot position given input
             self.pos[0] -= data.linear.y / 1000
             self.pos[1] += data.linear.x / 1000
             self.pos[2] += data.linear.z / 1000
 
-            self.ori[0] -= data.angular.y * np.pi / 180
-            self.ori[1] += data.angular.x * np.pi / 180
-            self.ori[2] += data.angular.z * np.pi / 180
+            # transform world frame rotation to base frame rotation
+            # step one: find corresponding rotation matrix
+            rotated = False
+            # for the current implementation, rotation is only on one axis, accurate to
+            # 1 degree. 
+            if data.angular.y != 0: # due to difference of screen frame and world frame y is -x
+                theta = np.radians(-data.angular.y)
+                c, s = np.cos(theta), np.sin(theta)
+                rot_mat = np.array([[1,0,0],[0,c,-s],[0,s,c]])
+                rotated = True
+            elif data.angular.x != 0:
+                theta = np.radians(data.angular.x)
+                c, s = np.cos(theta), np.sin(theta)
+                rot_mat = np.array([[c,0,s],[0,1,0],[-s,0,c]])
+                rotated = True
+            elif data.angular.z != 0:
+                theta = np.radians(data.angular.z)
+                c, s = np.cos(theta), np.sin(theta)
+                rot_mat = np.array([[c,-s,0],[s,c,0],[0,0,1]])
+                rotated = True
+            else:
+                rotated = False
+            
+            # step two: if rotated, find the world frame euler angles
+            if rotated:
+                self.transform = rot_mat @ self.transform
+                self.ori = euler.mat2euler(self.transform, 'rxyz')
+
 
             self.dirty = True
 
@@ -104,6 +144,8 @@ class RobotState:
             rospy.loginfo(self.ori)
             
             self.update_vrep()
+
+            self.publish_robot_status()
 
         else:
             rospy.logwarn("Needle (pos=%.1f) not retracted, cannot move robot." % self.needle_pos)
@@ -139,9 +181,9 @@ class RobotState:
         update vrep for ik
         """
         if self.dirty:
+            rospy.loginfo("updating robot position")
             IK_via_vrep(self.ct_robot, self.pos, self.ori, self.pr, self.dt)
             self.dirty=False
-            rospy.loginfo("updating robot position")
         elif self.needle_dirty:
             self.needle_dirty=False
             rospy.loginfo("updating needle insertion")
@@ -149,6 +191,22 @@ class RobotState:
             pass
         
 
+    def publish_robot_status(self):
+        """
+        update robot status into a Twist form, and publish over a topic
+        """
+        
+        self.robot_status.translation.x = self.pos[0]
+        self.robot_status.translation.y = self.pos[1]
+        self.robot_status.translation.z = self.pos[2]
+
+        quat = euler.euler2quat(self.ori[0], self.ori[1], self.ori[2])
+        self.robot_status.rotation.w = quat[0]
+        self.robot_status.rotation.x = quat[1]
+        self.robot_status.rotation.y = quat[2]
+        self.robot_status.rotation.z = quat[3]
+
+        self.robot_status_pub.publish(self.robot_status)        
 
 
 
