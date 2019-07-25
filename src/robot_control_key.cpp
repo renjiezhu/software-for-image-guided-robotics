@@ -130,67 +130,67 @@ void RobotControlKey::keyLoop()
         {
         case KEYCODE_L:
             // --x;
-            x=-1;
+            x = -1;
             ROS_DEBUG("X - ,   x=%1d", (int)x);
             dirty = true;
             break;
         case KEYCODE_R:
             // ++x;
-            x=1;
+            x = 1;
             ROS_DEBUG("X + ,   x=%1d", (int)x);
             dirty = true;
             break;
         case KEYCODE_U:
             // ++y;
-            y=1;
+            y = 1;
             ROS_DEBUG("Y + ,   y=%1d", (int)y);
             dirty = true;
             break;
         case KEYCODE_D:
             // --y;
-            y=-1;
+            y = -1;
             ROS_DEBUG("Y - ,   y=%1d", (int)y);
             dirty = true;
             break;
         case 'i':
         case 'I':
             // ++z_needle;
-            z_needle=1;
+            z_needle = 1;
             ROS_DEBUG("INS,    n=%1d", (int)z_needle);
             needle_dirty = true;
             break;
         case 'o':
         case 'O':
             // --z_needle;
-            z_needle=-1;
+            z_needle = -1;
             ROS_DEBUG("EXT,    n=%1d", (int)z_needle);
             needle_dirty = true;
             break;
         case 'z':
         case 'Z':
             // ++z;
-            z=1;
+            z = 1;
             ROS_DEBUG("Z + ,   z=%1d", (int)z);
             dirty = true;
             break;
         case 'x':
         case 'X':
             // --z;
-            z=-1;
+            z = -1;
             ROS_DEBUG("Z - ,   z=%1d", (int)z);
             dirty = true;
             break;
         case 'r':
         case 'R':
             // ++roll;
-            roll=1;
+            roll = 1;
             ROS_DEBUG("R + ,   r=%1d", (int)roll);
             dirty = true;
             break;
         case 'f':
         case 'F':
             // --roll;
-            roll=-1;
+            roll = -1;
             ROS_DEBUG("R - ,   r=%1d", (int)roll);
             dirty = true;
             break;
@@ -253,8 +253,13 @@ void RobotControlKey::keyLoop()
     return;
 }
 
-void RobotControlKey::returnZero() {
-    x=0;y=0;z=0;
-    roll=0;pitch=0;yaw=0;
-    z_needle=0;
+void RobotControlKey::returnZero()
+{
+    x = 0;
+    y = 0;
+    z = 0;
+    roll = 0;
+    pitch = 0;
+    yaw = 0;
+    z_needle = 0;
 }
