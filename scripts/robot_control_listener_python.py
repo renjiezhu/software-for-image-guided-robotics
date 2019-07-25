@@ -5,17 +5,17 @@
  * Listerner 
  * 
  * Topics Published:
- * * robot_status_TRANSFORM
+ * * robot_status_TRANSFORM (geometry_msgs/Transform)
  *
  * Topics Subscribed:
- * * robot_movement
- * * needle_insertion
+ * * robot_movement (geometry_msgs/Twist)
+ * * needle_insertion (std_msgs/Float64)
  * 
  * By Renjie Zhu (rezhu@eng.ucsd.edu)
  * 
  * July 9th, 2019
  * 
- """
+"""
 import rospy
 import numpy as np
 from geometry_msgs.msg import Twist
@@ -26,6 +26,7 @@ import transforms3d.euler as euler
 
 import signal
 import sys
+
 sys.path.append("/home/renjie/Documents/igr/src/software_interface/")
 # sys.path.append("/home/acrmri/homesoftware_interface/")
 from pyrep import PyRep
@@ -38,7 +39,6 @@ class RobotState:
     A class containing the current robot state
     """
 
-
     def __init__(self):
 
         rospy.init_node("robot_control_listener_python", anonymous=True)
@@ -50,11 +50,13 @@ class RobotState:
         self.needle_pos = 0.0
 
         # to rotate purely in world frame orientation and needle frame position,
-        # 
-        self.transform = np.eye(3)  
+        #
+        self.cur_pose = np.eye(3)
 
         # publisher of the current robot position in a format of geometry_msgs::Twist
-        self.robot_status_pub = rospy.Publisher("robot_status_TRANSFORM", Transform, queue_size=2)
+        self.robot_status_pub = rospy.Publisher(
+            "robot_status_TRANSFORM", Transform, queue_size=1
+        )
         self.robot_status = Transform()
 
         # dirty markers
@@ -63,14 +65,15 @@ class RobotState:
 
         # pyrep instance
         self.pr = PyRep()
-        self.pr.launch("/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt")
+        self.pr.launch(
+            "/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt"
+        )
         self.dt = 0.01
         self.pr.set_simulation_timestep(self.dt)
         self.pr.start()
 
         # pyrep robot model instance
         self.ct_robot = CtRobot()
-
 
     def shutdown_vrep(self):
         """
@@ -90,7 +93,6 @@ class RobotState:
         self.shutdown_vrep()
         rospy.signal_shutdown("from signal_handler")
 
-
     def needle_retracted(self):
         """
         return if the needle is retracted
@@ -101,7 +103,7 @@ class RobotState:
         """
         update robot pos and ori with given keyboard instructions
         """
-        
+
         if self.needle_retracted():
 
             # modify robot position given input
@@ -113,43 +115,44 @@ class RobotState:
             # step one: find corresponding rotation matrix
             rotated = False
             # for the current implementation, rotation is only on one axis, accurate to
-            # 1 degree. 
-            if data.angular.y != 0: # due to difference of screen frame and world frame y is -x
+            # 1 degree.
+            if data.angular.y != 0:  # due to difference of screen frame and world frame y is -x
                 theta = np.radians(-data.angular.y)
                 c, s = np.cos(theta), np.sin(theta)
-                rot_mat = np.array([[1,0,0],[0,c,-s],[0,s,c]])
+                rot_mat = np.array([[1, 0, 0], [0, c, -s], [0, s, c]])
                 rotated = True
             elif data.angular.x != 0:
                 theta = np.radians(data.angular.x)
                 c, s = np.cos(theta), np.sin(theta)
-                rot_mat = np.array([[c,0,s],[0,1,0],[-s,0,c]])
+                rot_mat = np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
                 rotated = True
             elif data.angular.z != 0:
                 theta = np.radians(data.angular.z)
                 c, s = np.cos(theta), np.sin(theta)
-                rot_mat = np.array([[c,-s,0],[s,c,0],[0,0,1]])
+                rot_mat = np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
                 rotated = True
             else:
                 rotated = False
-            
+
             # step two: if rotated, find the world frame euler angles
             if rotated:
-                self.transform = rot_mat @ self.transform
-                self.ori = euler.mat2euler(self.transform, 'rxyz')
-
+                self.cur_pose = rot_mat @ self.cur_pose
+                # get euler angles for vrep wrt world frame (rxyz)
+                self.ori = euler.mat2euler(self.cur_pose, "rxyz")
 
             self.dirty = True
 
-            rospy.loginfo(self.pos)
-            rospy.loginfo(self.ori)
-            
+            rospy.logdebug(self.pos)
+            rospy.logdebug(self.ori)
+
             self.update_vrep()
 
             self.publish_robot_status()
 
         else:
-            rospy.logwarn("Needle (pos=%.1f) not retracted, cannot move robot." % self.needle_pos)
-
+            rospy.logwarn(
+                "Needle (pos=%.1f) not retracted, cannot move robot." % self.needle_pos
+            )
 
     def needle_pos_callback(self, data):
         """
@@ -158,13 +161,12 @@ class RobotState:
 
         if self.needle_retracted() and data.data < 0:
             rospy.logwarn("Needle fully retracted.")
-        else: 
+        else:
             self.needle_pos += data.data
             self.needle_dirty = True
             rospy.loginfo(self.needle_pos)
 
             self.update_vrep()
-
 
     def update_state(self):
         """
@@ -183,19 +185,18 @@ class RobotState:
         if self.dirty:
             rospy.loginfo("updating robot position")
             IK_via_vrep(self.ct_robot, self.pos, self.ori, self.pr, self.dt)
-            self.dirty=False
+            self.dirty = False
         elif self.needle_dirty:
-            self.needle_dirty=False
+            self.needle_dirty = False
             rospy.loginfo("updating needle insertion")
         else:
             pass
-        
 
     def publish_robot_status(self):
         """
-        update robot status into a Twist form, and publish over a topic
+        update robot status into a Transform form, and publish over a topic
         """
-        
+
         self.robot_status.translation.x = self.pos[0]
         self.robot_status.translation.y = self.pos[1]
         self.robot_status.translation.z = self.pos[2]
@@ -206,8 +207,7 @@ class RobotState:
         self.robot_status.rotation.y = quat[2]
         self.robot_status.rotation.z = quat[3]
 
-        self.robot_status_pub.publish(self.robot_status)        
-
+        self.robot_status_pub.publish(self.robot_status)
 
 
 if __name__ == "__main__":
