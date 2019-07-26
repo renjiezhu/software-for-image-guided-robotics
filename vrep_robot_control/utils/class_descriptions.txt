@@ -1,0 +1,21 @@
+-NatNetClient2 - is the optitrak api to deal with grabbing the streaming data
+
+-GetJointData - creates user functions that interface with the NatNetClient and converts data to various formats
+
+-forwardKinematics - generates forward kin for robot, functions to call specific FK
+
+-getRobotPose - set of functions that returns specific robot poses, calls getjointdata functions
+
+-jointanglemixing - accounts for the coupling in the cable drive
+
+-tcp_class - sets up tcp communication
+
+-generatetrajectory - florians function to get a path of points
+
+TO DO
+
+combine anglecontrol and motor class - similar functionality makes sense to combine things
+create vreprobot class to has the functionality calls of vrep stuff
+
+
+

@@ -21,6 +21,9 @@ class dh_robot_config:
         self.a = a
         self.jointType = jointType
         
+        self.q = [sp.Symbol('q%i' % (ii+1)) for ii in range(self.num_joints)]
+        self.x = [sp.Symbol('x'), sp.Symbol('y'), sp.Symbol('z')]
+             
         self._Tbase = np.eye(4)
         self._Tbase[:3,:3] = t3d.euler.euler2mat(ai, aj, ak) #construct base transform
         self._Tjoint = []
@@ -31,14 +34,6 @@ class dh_robot_config:
         self._Tx_inv = []
         self._J_position = []
         self._J_orientation = []
-        
-        self.q = [sp.Symbol('q%i' % (ii+1)) for ii in range(self.num_joints)]
-        self.x = [sp.Symbol('x'), sp.Symbol('y'), sp.Symbol('z')]
-            
-        self.initKinematicTransforms()
-        
-    def initKinematicTransforms(self):
-        
         
         #constructs transform matrices for joints
         for i in range(self.num_joints):
@@ -60,7 +55,8 @@ class dh_robot_config:
                 [sp.sin(theta)*sp.sin(alpha), sp.cos(theta)*sp.sin(alpha), sp.cos(alpha), D*sp.cos(alpha)],
                 [0, 0, 0, 1]])    
             self._Tjoint.append(t)
-            
+        
+    def initKinematicTransforms(self):
         
         #constructs transform matrices from base and inverse
         for i in range(self.num_joints):

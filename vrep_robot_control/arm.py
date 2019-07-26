@@ -2,10 +2,12 @@ from pyrep.robots.robot_component import RobotComponent
 from pyrep.objects.dummy import Dummy
 from pyrep.objects.shape import Shape
 from pyrep.backend import vrep
-
+from pyrep.backend import utils
+from pyrep.backend.vrepConst import *
         
+
 class CtRobot(RobotComponent):
-    """CT Robot class representing a robot arm with path planning support.
+    """Robot class representing a robot arm with based on Vrep model.
     """
 
     def __init__(self, count: int = 0, name: str = 'ct_robot', num_joints: int = 7,
@@ -33,7 +35,7 @@ class CtRobot(RobotComponent):
         DH_frame_names = ['DH_frame_j%d' % (i+1) for i in range(num_joints)]
         DH_frame_names.insert(0, 'DH_frame_base')
         self.DH_frames = [Dummy(dhfname + suffix) for dhfname in DH_frame_names]
-       
+        # self.DH_frames.append(Dummy('tip'))
         
         # Used for motion planning
         self.max_velocity = max_velocity
@@ -46,3 +48,11 @@ class CtRobot(RobotComponent):
         self._ik_group = vrep.simGetIkGroupHandle(name+'_ik'+suffix)
         self._collision_collection = vrep.simGetCollectionHandle(
             name+'_arm'+suffix)
+
+        
+    def getJacobian(self, handle):
+        _, _, Jacobian, _ = utils.script_call('getJacobian', sim_scripttype_childscript, ints=[handle], )
+        return Jacobian
+        
+        
+        
