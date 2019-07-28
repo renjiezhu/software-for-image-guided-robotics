@@ -27,8 +27,10 @@ import transforms3d.euler as euler
 import signal
 import sys
 
-sys.path.append(".")
-sys.path.append("./src/software_interface")
+# sys.path.append(".")
+# sys.path.append("./src/software_interface")
+# import os
+# print(f"current working directory: {os.getcwd()}")
 sys.path.append("/home/renjie/Documents/igr/src/software_interface/")
 from pyrep import PyRep
 from vrep_robot_control.ct_robot_control import IK_via_vrep
@@ -216,7 +218,8 @@ class RobotState:
 
 if __name__ == "__main__":
 
-    robot = RobotState()
+    print(f"current working directory: {os.getcwd()}")
 
+    robot = RobotState()
     robot.update_state()
 
