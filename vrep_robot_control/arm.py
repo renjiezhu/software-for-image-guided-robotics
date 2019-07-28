@@ -3,7 +3,8 @@ from pyrep.objects.dummy import Dummy
 from pyrep.objects.shape import Shape
 from pyrep.backend import vrep
 from pyrep.backend import utils
-from pyrep.backend.vrepConst import *
+from pyrep.backend import vrepConst
+import numpy as np
         
 
 class CtRobot(RobotComponent):
@@ -50,9 +51,11 @@ class CtRobot(RobotComponent):
             name+'_arm'+suffix)
 
         
-    def getJacobian(self, handle):
-        _, _, Jacobian, _ = utils.script_call('getJacobian', sim_scripttype_childscript, ints=[handle], )
-        return Jacobian
+    def getJacobian(self):
+        '''Retrive Jacobian matrix from V-REP'''
+        Jsize, J, _, _ = utils.script_call('getJacobian@ct_robot', vrepConst.sim_scripttype_childscript, ints=[], floats=[], strings=[])
+        J.reverse()
+        return np.array(J).reshape(tuple(Jsize))
         
         
         

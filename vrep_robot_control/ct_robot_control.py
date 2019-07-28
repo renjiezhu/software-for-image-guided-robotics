@@ -17,7 +17,6 @@ def reach_target(robot: CtRobot):
     error[3:6] = oe
     error[6] = np.linalg.norm(pe)
     error[7] = np.linalg.norm(oe)
-    
     return error
 
 def IK_via_vrep(robot: CtRobot, pos: list, ori: list, pr: PyRep, dt: float):
@@ -33,7 +32,7 @@ def IK_via_vrep(robot: CtRobot, pos: list, ori: list, pr: PyRep, dt: float):
     robot._ik_target.set_orientation(ori)
     pr.step()
     
-    # joint_pos = []
+    joint_pos = []
     t = 0
     er = reach_target(robot)
     tmp = np.zeros(robot._num_joints)
@@ -41,9 +40,9 @@ def IK_via_vrep(robot: CtRobot, pos: list, ori: list, pr: PyRep, dt: float):
     while er[6]>1e-4 and t<4*dt and er[7]>3e-3: 
         # Precision is set to 0.1 mm and 0.1 deg in terms of pos and ori respectively 
         pr.step()
-        # for i in range(robot._num_joints):
-        #     tmp[i] = robot.joints[i].get_joint_position()
-        # joint_pos.append(tmp)
+        for i in range(robot._num_joints):
+            tmp[i] = robot.joints[i].get_joint_position()
+        joint_pos.append(tmp)
         t += dt
         er = reach_target(robot)
         
@@ -100,7 +99,7 @@ if __name__ == "__main__":
         ct_robot._ik_target.set_orientation(new_ori.tolist())
         ct_robot.set_joint_positions(origin_joint_pos)
         pr.step()
-        joint_pos = perform_IK_via_vrep(ct_robot, new_pos.tolist(), new_ori.tolist())
+        IK_via_vrep(ct_robot, new_pos.tolist(), new_ori.tolist())
     
     pr.stop()
 
