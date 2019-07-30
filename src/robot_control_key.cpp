@@ -231,6 +231,10 @@ void RobotControlKey::keyLoop()
         case ' ':
             // confirmation;
             confirmed++;
+            if (confirmed == 1)
+            {
+                ROS_INFO("Press [space] again to send current pose... ");
+            }
             break;
         }
 
@@ -262,11 +266,6 @@ void RobotControlKey::keyLoop()
             returnZero();
         }
 
-        if (confirmed == 1)
-        {
-            ROS_INFO("Press [space] again to send current pose... ");
-        }
-        
         if (confirmed >= 2)
         {
             confirmation_pub.publish(confirmation);
