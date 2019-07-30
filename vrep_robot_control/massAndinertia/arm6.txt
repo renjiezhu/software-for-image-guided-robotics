@@ -1,0 +1,35 @@
+Mass properties of Assem1^assembled_4dof_arm_2modified
+     Configuration: Default
+     Coordinate system: Coordinate System1
+
+The center of mass and the moments of inertia are output in the coordinate system of ct_robot_assembly
+* Includes the mass properties of one or more hidden components/bodies.
+
+Mass = 32.26 grams
+
+Volume = 31219.78 cubic millimeters
+
+Surface area = 20377.25  square millimeters
+
+Center of mass: ( millimeters )
+	X = -37.61
+	Y = 158.77
+	Z = 753.34
+
+Principal axes of inertia and principal moments of inertia: ( grams *  square millimeters )
+Taken at the center of mass.
+	 Ix = ( 0.00,  0.65, -0.76)   	Px = 1838.93
+	 Iy = ( 0.09, -0.75, -0.65)   	Py = 90492.27
+	 Iz = (-1.00, -0.07, -0.06)   	Pz = 90853.92
+
+Moments of inertia: ( grams *  square millimeters )
+Taken at the center of mass and aligned with the output coordinate system.
+	Lxx = 90850.87	Lxy = -79.34	Lxz = 41.78
+	Lyx = -79.34	Lyy = 52519.30	Lyz = -43870.62
+	Lzx = 41.78	Lzy = -43870.62	Lzz = 39814.94
+
+Moments of inertia: ( grams *  square millimeters )
+Taken at the output coordinate system.
+	Ixx = 19210923.05	Ixy = -192723.40	Ixz = -914036.50
+	Iyx = -192723.40	Iyy = 18405101.57	Iyz = 3814358.51
+	Izx = -914036.50	Izy = 3814358.51	Izz = 898585.97

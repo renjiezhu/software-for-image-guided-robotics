@@ -4,6 +4,7 @@ import sympy as sp
 import transforms3d as t3d
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.axes3d import Axes3D
+import cloudpickle
 
 import time #for testing code speed
 
@@ -20,20 +21,26 @@ class dh_robot_config:
         self.D = D
         self.a = a
         self.jointType = jointType
+        self.config_folder = 'robot_config'
         
         self.q = [sp.Symbol('q%i' % (ii+1)) for ii in range(self.num_joints)]
         self.x = [sp.Symbol('x'), sp.Symbol('y'), sp.Symbol('z')]
              
         self._Tbase = np.eye(4)
-        self._Tbase[:3,:3] = t3d.euler.euler2mat(ai, aj, ak) #construct base transform
-        self._Tjoint = []
-        self._T = []
-        self._Tlambda = []
+        self._Tbase[:3,:3] = t3d.euler.euler2mat(ai, aj, ak)  #construct base transform
+        self._Tjoint = []  # transformation from joint to joint
+        self._T = []  # transformation from base frame to joint
+        self._Tlambda = []  
         self._Rlambda = []
         self._Tx = []
         self._Tx_inv = []
         self._J_position = []
         self._J_orientation = []
+        
+        # accounting for mass and gravity term
+        self._M = []
+        self._Mq = []
+        self._Gq = []
         
         #constructs transform matrices for joints
         for i in range(self.num_joints):
@@ -55,6 +62,10 @@ class dh_robot_config:
                 [sp.sin(theta)*sp.sin(alpha), sp.cos(theta)*sp.sin(alpha), sp.cos(alpha), D*sp.cos(alpha)],
                 [0, 0, 0, 1]])    
             self._Tjoint.append(t)
+        
+        self._M.append(np.diag([5.539, 5.539, 5.539, 2.152e-2, 7.838e-1, 2.866e-2]))
+        self._M.append(np.diag([1.491e-2, 1.491e-2, 1.491e-2, 6.36e-2, 3.97e-4, 6.128e-1]))
+        
         
     def initKinematicTransforms(self):
         
@@ -141,6 +152,69 @@ class dh_robot_config:
     def _calc_T_inv(self, name, x, lambdify=True):
         pass
     
+    def _calc_Mq(self, lambdify=True):
+        """ Uses Sympy to generate the inertia matrix in
+        joint space for the ur5
+        lambdify boolean: if True returns a function to calculate
+                          the Jacobian. If False returns the Sympy
+                          matrix
+        """
+
+        # check to see if we have our inertia matrix saved in file
+        if os.path.isfile('%s/Mq' % self.config_folder):
+            Mq = cloudpickle.load(open('%s/Mq' % self.config_folder, 'rb'))
+        else:
+            # get the Jacobians for each link's COM
+            J = [self._calc_J('link%s' % ii, x=[0, 0, 0], lambdify=False)
+                 for ii in range(self.num_links)]
+
+            # transform each inertia matrix into joint space
+            # sum together the effects of arm segments' inertia on each motor
+            Mq = sp.zeros(self.num_joints)
+            for ii in range(self.num_links):
+                Mq += J[ii].T * self._M[ii] * J[ii]
+            Mq = sp.Matrix(Mq)
+
+            # save to file
+            cloudpickle.dump(Mq, open('%s/Mq' % self.config_folder, 'wb'))
+
+        if lambdify is False:
+            return Mq
+        return sp.lambdify(self.q + self.x, Mq)
+
+    def _calc_Mq_g(self, lambdify=True):
+        """ Uses Sympy to generate the force of gravity in
+        joint space for the ur5
+        lambdify boolean: if True returns a function to calculate
+                          the Jacobian. If False returns the Sympy
+                          matrix
+        """
+
+        # check to see if we have our gravity term saved in file
+        if os.path.isfile('%s/Mq_g' % self.config_folder):
+            Mq_g = cloudpickle.load(open('%s/Mq_g' % self.config_folder,
+                                         'rb'))
+        else:
+            # get the Jacobians for each link's COM
+            J = [self._calc_J('link%s' % ii, x=[0, 0, 0], lambdify=False)
+                 for ii in range(self.num_links)]
+
+            # transform each inertia matrix into joint space and
+            # sum together the effects of arm segments' inertia on each motor
+            Mq_g = sp.zeros(self.num_joints, 1)
+            for ii in range(self.num_joints):
+                Mq_g += J[ii].T * self._M[ii] * self.gravity
+            Mq_g = sp.Matrix(Mq_g)
+
+            # save to file
+            cloudpickle.dump(Mq_g, open('%s/Mq_g' % self.config_folder,
+                                        'wb'))
+
+        if lambdify is False:
+            return Mq_g
+        return sp.lambdify(self.q + self.x, Mq_g)
+
+
     def plot3D(self, q):
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
