@@ -51,20 +51,14 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  vector3.msg
-  base_frame_state.msg
-  needle_frame_state.msg
-  world_frame_state.msg
-  keyboard_input.msg
-)
+# add_message_files(
+#   FILES
+# )
 
 ## Generate services in the 'srv' folder
-add_service_files(
-  FILES
-  world_to_base.srv
-)
+# add_service_files(
+#   FILES
+# )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -218,8 +212,8 @@ include_directories(
 add_executable(robot_control_key src/robot_control_key.cpp)
 target_link_libraries(robot_control_key ${catkin_LIBRARIES})
 
-add_executable(robot_control_listener src/robot_control_listener.cpp)
-target_link_libraries(robot_control_listener ${catkin_LIBRARIES})
+# add_executable(robot_control_listener src/robot_control_listener.cpp)
+# target_link_libraries(robot_control_listener ${catkin_LIBRARIES})
 
 add_executable(needle_control_listener src/needle_control_listener.cpp)
 target_link_libraries(needle_control_listener ${catkin_LIBRARIES})

@@ -27,8 +27,11 @@ import transforms3d.euler as euler
 import signal
 import sys
 
+# sys.path.append(".")
+# sys.path.append("./src/software_interface")
+# import os
+# print(f"current working directory: {os.getcwd()}")
 sys.path.append("/home/renjie/Documents/igr/src/software_interface/")
-# sys.path.append("/home/acrmri/homesoftware_interface/")
 from pyrep import PyRep
 from vrep_robot_control.ct_robot_control import IK_via_vrep
 from vrep_robot_control.arm import CtRobot
@@ -36,7 +39,10 @@ from vrep_robot_control.arm import CtRobot
 
 class RobotState:
     """
-    A class containing the current robot state
+    A class maintaining the robot state (pose), 
+    getting updates from ros topics about movement
+    send robot state to vrep for ik calculation
+    send transform to IGTL link * (subject to change)
     """
 
     def __init__(self):
@@ -49,8 +55,7 @@ class RobotState:
         self.ori = [0.0, 0.0, 0.0]
         self.needle_pos = 0.0
 
-        # to rotate purely in world frame orientation and needle frame position,
-        #
+        # keep track of current pose in a 3x3 matrix (SO(3))
         self.cur_pose = np.eye(3)
 
         # publisher of the current robot position in a format of geometry_msgs::Twist
@@ -62,6 +67,7 @@ class RobotState:
         # dirty markers
         self.dirty = False
         self.needle_dirty = False
+        self.rotating = False
 
         # pyrep instance
         self.pr = PyRep()
@@ -82,9 +88,7 @@ class RobotState:
         self.pr.stop()
         rospy.loginfo("V-REP shutting down.")
         self.pr.shutdown()
-        rospy.loginfo("DONE")
 
-    ## signal capture (sigint) ##
     def signal_handler(self, sig, frame):
         """
         safely shutdown vrep when control C is pressed
@@ -95,7 +99,7 @@ class RobotState:
 
     def needle_retracted(self):
         """
-        return if the needle is retracted
+        return True if the needle is retracted
         """
         return self.needle_pos < 1e-5 and self.needle_pos >= 0
 
@@ -103,7 +107,6 @@ class RobotState:
         """
         update robot pos and ori with given keyboard instructions
         """
-
         if self.needle_retracted():
 
             # modify robot position given input
@@ -113,29 +116,28 @@ class RobotState:
 
             # transform world frame rotation to base frame rotation
             # step one: find corresponding rotation matrix
-            rotated = False
             # for the current implementation, rotation is only on one axis, accurate to
             # 1 degree.
             if data.angular.y != 0:  # due to difference of screen frame and world frame y is -x
                 theta = np.radians(-data.angular.y)
                 c, s = np.cos(theta), np.sin(theta)
                 rot_mat = np.array([[1, 0, 0], [0, c, -s], [0, s, c]])
-                rotated = True
+                self.rotating = True
             elif data.angular.x != 0:
                 theta = np.radians(data.angular.x)
                 c, s = np.cos(theta), np.sin(theta)
                 rot_mat = np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
-                rotated = True
+                self.rotating = True
             elif data.angular.z != 0:
                 theta = np.radians(data.angular.z)
                 c, s = np.cos(theta), np.sin(theta)
                 rot_mat = np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
-                rotated = True
+                self.rotating = True
             else:
-                rotated = False
+                self.rotating = False
 
             # step two: if rotated, find the world frame euler angles
-            if rotated:
+            if self.rotating:
                 self.cur_pose = rot_mat @ self.cur_pose
                 # get euler angles for vrep wrt world frame (rxyz)
                 self.ori = euler.mat2euler(self.cur_pose, "rxyz")
@@ -149,7 +151,7 @@ class RobotState:
 
             self.publish_robot_status()
 
-        else:
+        else: # if needle is not retracted, WARN (subject to change as safety precautions change)
             rospy.logwarn(
                 "Needle (pos=%.1f) not retracted, cannot move robot." % self.needle_pos
             )
@@ -158,7 +160,6 @@ class RobotState:
         """
         update needle position with given keyboard instructions
         """
-
         if self.needle_retracted() and data.data < 0:
             rospy.logwarn("Needle fully retracted.")
         else:
@@ -171,6 +172,9 @@ class RobotState:
     def update_state(self):
         """
         subscribe to keyboard published to update the robot state
+        
+        Core method to be called in __main__; access point to both
+        callbacks. Held by rospy.spin() until ctrl+C.
         """
         rospy.Subscriber("needle_insertion", Float64, self.needle_pos_callback)
         rospy.Subscriber("robot_movement", Twist, self.robot_pos_callback)
@@ -180,15 +184,18 @@ class RobotState:
 
     def update_vrep(self):
         """
-        update vrep for ik
+        update robot status for ik calculation via v-rep
+
+        Call function developped by Guosong; interact with v-rep
         """
         if self.dirty:
             rospy.loginfo("updating robot position")
             IK_via_vrep(self.ct_robot, self.pos, self.ori, self.pr, self.dt)
             self.dirty = False
         elif self.needle_dirty:
-            self.needle_dirty = False
             rospy.loginfo("updating needle insertion")
+            # TODO: needle motor driving
+            self.needle_dirty = False
         else:
             pass
 
@@ -196,7 +203,6 @@ class RobotState:
         """
         update robot status into a Transform form, and publish over a topic
         """
-
         self.robot_status.translation.x = self.pos[0]
         self.robot_status.translation.y = self.pos[1]
         self.robot_status.translation.z = self.pos[2]
@@ -212,7 +218,8 @@ class RobotState:
 
 if __name__ == "__main__":
 
-    robot = RobotState()
+    print(f"current working directory: {os.getcwd()}")
 
+    robot = RobotState()
     robot.update_state()
 
