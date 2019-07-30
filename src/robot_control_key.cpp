@@ -6,6 +6,7 @@
  * Topics Published:
  * * robot_movement
  * * needle_insertion
+ * * simulation_confirmation
  * 
  * Topics Subscribed:
  * 
@@ -19,6 +20,7 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
 #include "std_msgs/Float64.h"
+#include "std_msgs/Bool.h"
 #include "signal.h"
 #include "termios.h"
 #include "stdio.h"
@@ -43,13 +45,16 @@ private:
     // test values
     double x, y, z, roll, pitch, yaw, z_needle;
 
+    short confirmed;
+
     ros::Publisher robot_pos_pub;
     ros::Publisher needle_pub;
+    ros::Publisher confirmation_pub;
 };
 
 // ctor
 RobotControlKey::RobotControlKey()
-    : x(0), y(0), z(0), roll(0), pitch(0), yaw(0), z_needle(0)
+    : x(0), y(0), z(0), roll(0), pitch(0), yaw(0), z_needle(0), confirmed(0)
 {
 
     nh.param("x", x, x);
@@ -62,6 +67,7 @@ RobotControlKey::RobotControlKey()
 
     robot_pos_pub = nh.advertise<geometry_msgs::Twist>("robot_movement", 1);
     needle_pub = nh.advertise<std_msgs::Float64>("needle_insertion", 1);
+    confirmation_pub = nh.advertise<std_msgs::Bool>("simulation_confirmation", 1);
 }
 
 int kfd = 0;
@@ -222,6 +228,14 @@ void RobotControlKey::keyLoop()
             ROS_DEBUG("W - ,   w=%1d", (int)yaw);
             dirty = true;
             break;
+        case ' ':
+            // confirmation;
+            confirmed++;
+            if (confirmed == 1)
+            {
+                ROS_INFO("Press [space] again to send current pose... ");
+            }
+            break;
         }
 
         geometry_msgs::Twist input;
@@ -235,6 +249,9 @@ void RobotControlKey::keyLoop()
         std_msgs::Float64 input_n;
         input_n.data = z_needle;
 
+        std_msgs::Bool confirmation;
+        confirmation.data = 1;
+
         if (dirty)
         {
             robot_pos_pub.publish(input);
@@ -246,6 +263,13 @@ void RobotControlKey::keyLoop()
         {
             needle_pub.publish(input_n);
             needle_dirty = false;
+            returnZero();
+        }
+
+        if (confirmed >= 2)
+        {
+            confirmation_pub.publish(confirmation);
+            ROS_INFO("Simulation result sent. ");
             returnZero();
         }
     }
@@ -262,4 +286,5 @@ void RobotControlKey::returnZero()
     pitch = 0;
     yaw = 0;
     z_needle = 0;
+    confirmed = 0;
 }

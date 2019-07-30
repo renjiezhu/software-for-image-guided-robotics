@@ -215,5 +215,5 @@ target_link_libraries(robot_control_key ${catkin_LIBRARIES})
 # add_executable(robot_control_listener src/robot_control_listener.cpp)
 # target_link_libraries(robot_control_listener ${catkin_LIBRARIES})
 
-add_executable(needle_control_listener src/needle_control_listener.cpp)
-target_link_libraries(needle_control_listener ${catkin_LIBRARIES})
+add_executable(test_listener src/test_listener.cpp)
+target_link_libraries(test_listener ${catkin_LIBRARIES})
