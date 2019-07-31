@@ -29,8 +29,8 @@ class CtRobot(RobotComponent):
 
         part_names = ['arm%d_dynamic' % i for i in range(num_joints+1)]
         self.arms = [Shape(pname + suffix) for pname in part_names]
-        frame_names = ['reference_frame_j%d' % i for i in range(num_joints+1)]
-        self.frames = [Dummy(fname + suffix) for fname in frame_names]
+        frame_names = ['COM_arm%d' % i for i in range(num_joints+1)]
+        self.COMs = [Dummy(fname + suffix) for fname in frame_names]
         DH_frame_names = ['DH_frame_j%d' % i for i in range(num_joints+1)]
         self.DH_frames = [Dummy(dhfname + suffix) for dhfname in DH_frame_names]
 
@@ -54,13 +54,10 @@ class CtRobot(RobotComponent):
         c1,c2,c3 = centerofmass
         o, f, s, _ = utils.script_call('setMassAndInertia@ct_robot', vrepConst.sim_scripttype_childscript, ints=[handle], 
         floats=[mass,i1,i2,i3,i4,i5,i6,i7,i8,i9,c1,c2,c3], strings=[])
-        print('success')
-        print(o)
         
     def getMassAndInertia(self, handle):
         '''Get mass, inertia and center of mass in V-REP model with respect to World Frame'''
-        _, floatOutput, _, _ = utils.script_call('getMassAndInertia@ct_robot', vrepConst.sim_scripttype_childscript, ints=[handle], 
-        floats=[], strings=[])
+        _, floatOutput, _ = utils.script_call('getMassAndInertia@ct_robot', vrepConst.sim_scripttype_childscript, ints=[handle], floats=[], strings=[])
         mass = floatOutput[0]
         inertia = np.array(floatOutput[1]).reshape(3,3)
         centerofmass = floatOutput[2]

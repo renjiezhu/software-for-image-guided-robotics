@@ -10,9 +10,9 @@ Volume = 858345.94 cubic millimeters
 Surface area = 413911.43  square millimeters
 
 Center of mass: ( millimeters )
-	X = -33.78
-	Y = 93.02
-	Z = 37.98
+	X = 4.39
+	Y = 95.46
+	Z = 26.55
 
 Principal axes of inertia and principal moments of inertia: ( grams *  square millimeters )
 Taken at the center of mass.
@@ -28,6 +28,6 @@ Taken at the center of mass and aligned with the output coordinate system.
 
 Moments of inertia: ( grams *  square millimeters )
 Taken at the output coordinate system.
-	Ixx = 29144417.44	Ixy = -3762191.55	Ixz = -2168861.63
-	Iyx = -3762191.55	Iyy = 19471187.84	Iyz = 4763578.26
-	Izx = -2168861.63	Izy = 4763578.26	Izz = 15069013.51
+	Ixx = 28812948.54	Ixy = 497786.46	Ixz = -494648.32
+	Iyx = 497786.46	Iyy = 17246833.44	Iyz = 3569278.96
+	Izx = -494648.32	Izy = 3569278.96	Izz = 14278023.09

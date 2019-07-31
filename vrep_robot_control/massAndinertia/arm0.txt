@@ -1,4 +1,4 @@
-vMass properties of teststand_base_x^ct_robot_assembly
+Mass properties of teststand_base_x^ct_robot_assembly
      Configuration: Default
      Coordinate system: Coordinate System1
 

@@ -10,24 +10,24 @@ Volume = 14016.28 cubic millimeters
 Surface area = 10699.66  square millimeters
 
 Center of mass: ( millimeters )
-	X = -37.34
-	Y = 159.26
-	Z = 772.98
+	X = 1.93
+	Y = 161.74
+	Z = 761.56
 
 Principal axes of inertia and principal moments of inertia: ( grams *  square millimeters )
 Taken at the center of mass.
-	 Ix = ( 0.02,  0.67, -0.74)   	Px = 1409.97
-	 Iy = ( 0.27, -0.72, -0.64)   	Py = 3349.39
-	 Iz = (-0.96, -0.19, -0.19)   	Pz = 4046.30
+	 Ix = ( 0.00,  0.67, -0.74)   	Px = 1409.97
+	 Iy = ( 0.29, -0.71, -0.64)   	Py = 3349.39
+	 Iz = (-0.96, -0.22, -0.19)   	Pz = 4046.30
 
 Moments of inertia: ( grams *  square millimeters )
 Taken at the center of mass and aligned with the output coordinate system.
-	Lxx = 3994.05	Lxy = -107.41	Lxz = -153.23
-	Lyx = -107.41	Lyy = 2503.67	Lyz = -990.35
-	Lzx = -153.23	Lzy = -990.35	Lzz = 2307.95
+	Lxx = 3986.90	Lxy = -148.76	Lxz = -125.58
+	Lyx = -148.76	Lyy = 2510.81	Lyz = -994.23
+	Lzx = -125.58	Lzy = -994.23	Lzz = 2307.95
 
 Moments of inertia: ( grams *  square millimeters )
 Taken at the output coordinate system.
-	Ixx = 9291619.60	Ixy = -88776.35	Ixz = -430507.50
-	Iyx = -88776.35	Iyy = 8932700.97	Iyz = 1834678.35
-	Izx = -430507.50	Izy = 1834678.35	Izz = 401311.30
+	Ixx = 9041965.57	Ixy = 4509.98	Ixz = 21810.33
+	Iyx = 4509.98	Iyy = 8650480.01	Iyz = 1835646.52
+	Izx = 21810.33	Izy = 1835646.52	Izz = 392428.69
