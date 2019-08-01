@@ -4,17 +4,26 @@ import sympy as sp
 import transforms3d as t3d
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.axes3d import Axes3D
+from config import *
 import cloudpickle
-
 import time #for testing code speed
 
 pi = np.pi
 
+
 class dh_robot_config:
-    ''' provides a robot class for forward and inverse kinematics, jacobian calculation based on modified DH parameters as defined in Introduction to Robotics, Mechanics and Control'''
+    ''' provides a robot class for forward and inverse kinematics, jacobian calculation based 
+    on modified DH parameters as defined in Introduction to Robotics, Mechanics and Control.
+
+    The Mass and Inertia matrix, Gravity matrix are also included with respect to 
+    '''
     
     def __init__(self, num_joints, alpha, theta, D, a, jointType, ai, aj, ak):
         
+        '''D-H parameter includes: D, a, alpha, theta
+        ai, aj, ak are the euler transformation of base with respect to the world frame
+        x = [x, y, z] is the initial of base frame in world frame
+        '''
         self.num_joints = num_joints
         self.alpha = alpha
         self.theta = theta
@@ -22,117 +31,156 @@ class dh_robot_config:
         self.a = a
         self.jointType = jointType
         self.config_folder = 'robot_config'
+        self.num_links = num_joints + 1
         
         self.q = [sp.Symbol('q%i' % (ii+1)) for ii in range(self.num_joints)]
+        self.dq = [sp.Symbol('dq%i' % (ii+1)) for ii in range(self.num_joints)]
         self.x = [sp.Symbol('x'), sp.Symbol('y'), sp.Symbol('z')]
              
         self._Tbase = np.eye(4)
         self._Tbase[:3,:3] = t3d.euler.euler2mat(ai, aj, ak)  #construct base transform
-        self._Tjoint = []  # transformation from joint to joint
-        self._T = []  # transformation from base frame to joint
-        self._Tlambda = []  
-        self._Rlambda = []
-        self._Tx = []
-        self._Tx_inv = []
-        self._J_position = []
-        self._J_orientation = []
+        self._Tj2j = []  # transformation from joint to joint
+        self._Tj2l = []  # transformation from joint to link
+        self._Tjoint = []  # transformation from base frame to joint
+        self._Tlink = []  # transformation from base frame to link
+        
+        self._Rjointlambda = []
+        self._Rlinklambda = []
+        self._Tjointlambda = []
+        self._Tlinklambda = []
+        self._Tx_joint = []
+        self._Tx_link = []
+        self._Tx_inv_joint = []
+        self._Tx_inv_link = []
+        self._J_position_joint = []
+        self._J_orientation_joint = []
+        self._J_position_link = []
+        self._J_orientation_link = []
+        self._J_joint = []
+        self._J_link = []
         
         # accounting for mass and gravity term
         self._M = []
         self._Mq = []
         self._Gq = []
-        
+        self.gravity = sp.Matrix([0,0,-9.81,0,0,0])
+
+        self._L = L
         #constructs transform matrices for joints
-        for i in range(self.num_joints):
-            theta = self.theta[i]
-            a = self.a[i]
-            D = self.D[i]
-            alpha = self.alpha[i]
+        for i in range(self.num_joints + 1):
+            self._M.append(np.diag(M[i]))
             
-            if self.jointType[i] == 'r':
-                theta += self.q[i]
-            elif self.jointType[i] == 'p':
-                D += self.q[i]            
-            else:
-                print("error in joint {} type, neither prismatic (p) or revolute (r)".format(i))
+            if i>0 :
+                theta = self.theta[i-1]
+                a = self.a[i-1]
+                D = self.D[i-1]
+                alpha = self.alpha[i-1]
+            
+                if self.jointType[i-1] == 'r':
+                    theta += self.q[i-1]
+                elif self.jointType[i-1] == 'p':
+                    D += self.q[i-1]            
+                else:
+                    print("error in joint {} type, neither prismatic (p) or revolute (r)".format(i-1))
                 
-            t = sp.Matrix([
-                [sp.cos(theta), -sp.sin(theta), 0, a],
-                [sp.sin(theta)*sp.cos(alpha), sp.cos(theta)*sp.cos(alpha), -sp.sin(alpha), -D*sp.sin(alpha)],
-                [sp.sin(theta)*sp.sin(alpha), sp.cos(theta)*sp.sin(alpha), sp.cos(alpha), D*sp.cos(alpha)],
-                [0, 0, 0, 1]])    
-            self._Tjoint.append(t)
-        
-        self._M.append(np.diag([5.539, 5.539, 5.539, 2.152e-2, 7.838e-1, 2.866e-2]))
-        self._M.append(np.diag([1.491e-2, 1.491e-2, 1.491e-2, 6.36e-2, 3.97e-4, 6.128e-1]))
-        
-        
+                t = sp.Matrix([
+                    [sp.cos(theta), -sp.sin(theta), 0, a],
+                    [sp.sin(theta)*sp.cos(alpha), sp.cos(theta)*sp.cos(alpha), -sp.sin(alpha), -D*sp.sin(alpha)],
+                    [sp.sin(theta)*sp.sin(alpha), sp.cos(theta)*sp.sin(alpha), sp.cos(alpha), D*sp.cos(alpha)],
+                    [0, 0, 0, 1]])    
+                self._Tj2j.append(t)
+
+            l = sp.Matrix([
+                [1, 0, 0, self._L[i, 0]],
+                [0, 1, 0, self._L[i, 1]],
+                [0, 0, 1, self._L[i, 2]],
+                [0, 0, 0, 1]
+            ])
+            self._Tj2l.append(l)
+
+
     def initKinematicTransforms(self):
-        
-        #constructs transform matrices from base and inverse
-        for i in range(self.num_joints):
+        #constructs transform matrices from base to joint and link
+        for i in range(self.num_joints + 1):
+            # Transformation from world base to joint 
+            if i < self.num_joints:
+                if i > 0:
+                    self._Tjoint.append(self._Tjoint[i-1]*self._Tj2j[i])
+                else:
+                    self._Tjoint.append(self._Tbase*self._Tj2j[i])  # notice this includes the base transform
+            # Transformation from world base to link 
             if i > 0:
-                self._T.append(self._T[i-1]*self._Tjoint[i])
+                self._Tlink.append(self._Tjoint[i-1]*self._Tj2l[i])
             else:
-                self._T.append(self._Tbase*self._Tjoint[i]) #notice this includes the base transform
-                
-            self._Tlambda.append(sp.lambdify(self.q, self._T[i]))
-            self._Rlambda.append(sp.lambdify(self.q, self._T[i][:3,:3]))
-            
-            self._Tx.append(self._calc_Tx(i)) #
-            
-            #calculate inverse transforms
-            Tx = self._T[i]
+                self._Tlink.append(self._Tbase*self._Tj2l[i])
+            # Rotation matrix of joint and link that can be called
+            if i < self.num_joints:
+                self._Rjointlambda.append(sp.lambdify(self.q, self._Tjoint[i][:3,:3]))
+            self._Rlinklambda.append(sp.lambdify(self.q, self._Tlink[i][:3,:3]))
+            # Transformation of joint and link with respect to world frame
+            # Default is [0, 0, 0] (Robot base frame coincide with world frame)
+            if i < self.num_joints:
+                self._Tx_joint.append(self._calc_Tx(self._Tjoint[i]))
+            self._Tx_link.append(self._calc_Tx(self._Tlink[i]))
+            # calculate inverse transformations of joint and link
+            if i < self.num_joints:
+                Tx = self._Tjoint[i]
+                rotation_inv = Tx[:3, :3].T
+                translation_inv = -rotation_inv * Tx[:3, 3]
+                Tx_inv = rotation_inv.row_join(translation_inv).col_join(sp.Matrix([[0, 0, 0, 1]]))
+                self._Tx_inv_joint.append(sp.lambdify(self.q + self.x, Tx_inv))
+            Tx = self._Tlink[i]
             rotation_inv = Tx[:3, :3].T
             translation_inv = -rotation_inv * Tx[:3, 3]
-            Tx_inv = rotation_inv.row_join(translation_inv).col_join(
-            sp.Matrix([[0, 0, 0, 1]]))
-            self._Tx_inv.append(sp.lambdify(self.q + self.x, Tx_inv))
-            
-            #calculate position jacobian
-            self._J_position.append(self._calc_J_position(i, lambdify = True))
-            self._J_orientation.append(self._calc_J_orientation(i, lambdify = True))
-            
-                    
-    
-    def _calc_Tx(self, i, lambdify = True):
-        Tx = self._T[i] * sp.Matrix(self.x + [1]) #appends a 1 to the column vector x
+            Tx_inv = rotation_inv.row_join(translation_inv).col_join(sp.Matrix([[0, 0, 0, 1]]))
+            self._Tx_inv_link.append(sp.lambdify(self.q + self.x, Tx_inv))
+            # calculate jacobian of joint
+            if i < self.num_joints:
+                self._J_position_joint.append(self._calc_J_position(self._Tjoint[i], lambdify = True))
+                self._J_orientation_joint.append(self._calc_J_orientation(self._Tjoint[i], i, lambdify = True))
+                self._J_joint.append(self._calc_J(self._Tjoint[i], i, lambdify = True))
+            # calculate jacobian of link
+            self._J_position_link.append(self._calc_J_position(self._Tlink[i], lambdify = True))
+            self._J_orientation_link.append(self._calc_J_orientation(self._Tlink[i], i, lambdify = True))
+            self._J_link.append(self._calc_J(self._Tlink[i], i, lambdify = True))
+            print(len(self._J_link))
+            # calculate mass and gravity matrix in joint space
+        self._Mq.append(self._calc_Mq(lambdify=True))
+        self._Gq.append(self._calc_Gq(lambdify=True))
+
+    def _calc_Tx(self, T, lambdify = True):
+        Tx =  T * sp.Matrix(self.x + [1])  # appends a 1 to the column vector x
         if lambdify:
             return sp.lambdify(self.q + self.x, Tx)
         return Tx
-    
-    def Tx(self, i, q, x=[0, 0, 0]):
+
+    def Tx(self, T, q, x=[0, 0, 0]):  # --------------------------------------------- need to be revised
         parameters = tuple(q) + tuple(x)
-        return self._Tx[i](*parameters)[:-1].flatten()
+        return T(*parameters)[:-1].flatten()
     
-    def Orientation_quaternion(self, i, q):
+    def Orientation_quaternion(self, i, q):  # --------------------------------------------- need to be revised
         parameters = tuple(q)
-        return t3d.quaternions.mat2quat(self._Rlambda[i](*parameters))
+        return t3d.quaternions.mat2quat(self._Rjointlambda[i](*parameters))
     
-    def Orientation_euler(self, i, q):
+    def Orientation_euler(self, i, q):  # --------------------------------------------- need to be revised
         parameters = tuple(q)
-        return t3d.euler.mat2euler(self._Rlambda[i](*parameters))
+        return t3d.euler.mat2euler(self._Rjointlambda[i](*parameters))
     
-    def Orientation_axAngle(self, i, q):
+    def Orientation_axAngle(self, i, q):  # --------------------------------------------- need to be revised
         parameters = tuple(q)
-        return t3d.axangles.mat2axangle(self._Rlambda[i](*parameters))
+        return t3d.axangles.mat2axangle(self._Rjointlambda[i](*parameters))
     
-    def _calc_J_position(self, i, lambdify = True):
-        Tx = self._calc_Tx(i, lambdify = False)
+    def _calc_J_position(self, T, lambdify = True):
+        Tx = self._calc_Tx(T, lambdify = False)
         J = Tx.jacobian(sp.Matrix(self.q))[:3,:]
         if lambdify:
             return sp.lambdify(self.q + self.x, J)
         return J
     
-    def J_position(self, i, q, x=[0, 0, 0]):
-        parameters = tuple(q) + tuple(x)
-        return np.array(self._J_position[i](*parameters))
-    
-    def _calc_J_orientation(self, i, lambdify = True):
-        J = sp.zeros(3,i+1)
-        
+    def _calc_J_orientation(self, T, x, lambdify = True):
+        i=x if x==0 else x-1
+        J = sp.zeros(3,self.num_joints)
         for j in range(i+1):
-            T = self._T[j]
             if self.jointType[j] == 'r':
                 z_hat = sp.Matrix([0, 0, 1])
             elif self.jointType[j] == 'p':
@@ -145,11 +193,18 @@ class dh_robot_config:
             return sp.lambdify(self.q + self.x, J)
         return J
     
-    def J_orientation(self, i, q, x=[0, 0, 0]):
+    def _calc_J(self, T, i, lambdify=True):
+        x = self._calc_J_position(T, lambdify=False)
+        y = self._calc_J_orientation(T, i, lambdify=False)
+        if lambdify:
+                sp.lambdify(self.q + self.x, x.col_join(y))
+        return x.col_join(y)
+        
+    def Jx(self, T, q, x=[0, 0, 0]):
         parameters = tuple(q) + tuple(x)
-        return np.array(self._J_orientation[i](*parameters))
-    
-    def _calc_T_inv(self, name, x, lambdify=True):
+        return np.array(T(*parameters))
+
+    def Tx_inv(self, name, x, lambdify=True):  # --------------------------------------------- need to be revised
         pass
     
     def _calc_Mq(self, lambdify=True):
@@ -164,55 +219,42 @@ class dh_robot_config:
         if os.path.isfile('%s/Mq' % self.config_folder):
             Mq = cloudpickle.load(open('%s/Mq' % self.config_folder, 'rb'))
         else:
-            # get the Jacobians for each link's COM
-            J = [self._calc_J('link%s' % ii, x=[0, 0, 0], lambdify=False)
-                 for ii in range(self.num_links)]
-
             # transform each inertia matrix into joint space
             # sum together the effects of arm segments' inertia on each motor
             Mq = sp.zeros(self.num_joints)
             for ii in range(self.num_links):
-                Mq += J[ii].T * self._M[ii] * J[ii]
+                Mq += self._J_link[ii].T * self._M[ii] * self._J_link[ii]
             Mq = sp.Matrix(Mq)
-
             # save to file
-            cloudpickle.dump(Mq, open('%s/Mq' % self.config_folder, 'wb'))
-
+            # cloudpickle.dump(Mq, open('%s/Mq' % self.config_folder, 'wb'))
         if lambdify is False:
             return Mq
         return sp.lambdify(self.q + self.x, Mq)
 
-    def _calc_Mq_g(self, lambdify=True):
+    def _calc_Gq(self, lambdify=True):
         """ Uses Sympy to generate the force of gravity in
         joint space for the ur5
         lambdify boolean: if True returns a function to calculate
                           the Jacobian. If False returns the Sympy
                           matrix
         """
-
         # check to see if we have our gravity term saved in file
-        if os.path.isfile('%s/Mq_g' % self.config_folder):
-            Mq_g = cloudpickle.load(open('%s/Mq_g' % self.config_folder,
+        if os.path.isfile('%s/Gq' % self.config_folder):
+            Gq = cloudpickle.load(open('%s/Gq' % self.config_folder,
                                          'rb'))
         else:
-            # get the Jacobians for each link's COM
-            J = [self._calc_J('link%s' % ii, x=[0, 0, 0], lambdify=False)
-                 for ii in range(self.num_links)]
-
             # transform each inertia matrix into joint space and
             # sum together the effects of arm segments' inertia on each motor
-            Mq_g = sp.zeros(self.num_joints, 1)
+            Gq = sp.zeros(self.num_joints, 1)
             for ii in range(self.num_joints):
-                Mq_g += J[ii].T * self._M[ii] * self.gravity
-            Mq_g = sp.Matrix(Mq_g)
-
+                Gq += self._J_link[ii].T * self._M[ii] * self.gravity
+            Gq = sp.Matrix(Gq)
             # save to file
-            cloudpickle.dump(Mq_g, open('%s/Mq_g' % self.config_folder,
-                                        'wb'))
-
+            # cloudpickle.dump(Gq, open('%s/Gq' % self.config_folder,
+            #                            'wb'))
         if lambdify is False:
-            return Mq_g
-        return sp.lambdify(self.q + self.x, Mq_g)
+            return Gq
+        return sp.lambdify(self.q + self.x, Gq)
 
 
     def plot3D(self, q):
@@ -222,7 +264,7 @@ class dh_robot_config:
         plot_sphere(np.zeros(3), 0.075, ax, color = 'b')
         points = np.empty([self.num_joints, 3])
         for i in range(self.num_joints):
-            points[i,:] = self.Tx(i = i, q = q)
+            points[i,:] = self.Tx(self._Tx_joint[i], q = q)
             if self.jointType[i] == 'r':
                 lineColor = 'b-'
             else:
@@ -284,43 +326,7 @@ def plot_sphere(position, radius, ax, color='g', linewidth=0):
 color=color, linewidth=0)       
     
 if __name__ == '__main__':
-    
-    sp.init_printing()
-    robot = dh_robot_config(num_joints = 4, alpha = [-pi/2, pi/2, 0, pi/2], theta = [0, pi/2, 0, pi/2], D = [0, 0, 0, 0], a = [0, 0, 0, 0], jointType = ['p', 'p', 'p', 'r'], ai = pi/2, aj = 0, ak = 0)
-    for i in range(robot.num_joints):
-        sp.pprint(robot._T[i])
-        print('\n')
-        
-    #check FK matches up by hand
-    print(robot.Tx(2, [0.5, 0, 0, 0])) #-0.5 y
-    print(robot.Tx(2, [0., 0.5, 0, 0])) #0.5 z
-    print(robot.Tx(2, [0., 0., 0.5, 0])) #0.5 x
-    
-    #check Jacobian matches up by hand
-    for i in range(robot.num_joints):
-        print('position jacobian:\n')
-        sp.pprint(robot._calc_J_position(i, lambdify = False))
-        print('orientation jacobian:\n')
-        sp.pprint(robot._calc_J_orientation(i, lambdify = False))
-        print('\n')
-        
-   #time FK and Jacobian calculations
-    num_iters = 100000
-    qs = np.random.rand(num_iters,4)
-    
-    start = time.time()
-    for i in range(num_iters):
-        robot.Tx(3, qs[i])
-    print('Time per iter for FK over {} iters: {}'.format(num_iters, (time.time()-start)/num_iters))
-
-    
-    start = time.time()
-    for i in range(num_iters):
-        robot.J_position(3, qs[i])
-        robot.J_orientation(3, qs[i])
-    print('Time per iter for Jacobian over {} iters: {}'.format(num_iters, (time.time()-start)/num_iters))
-    
-    
-    print('Orientation quaternion test: {}'.format(robot.Orientation_quaternion(3,qs[-1])))
-          
-     
+    ct_robot = dh_robot_config(num_joints, alpha, theta, D, a, jointType, ai, aj, ak)
+    ct_robot.initKinematicTransforms()
+    # print(ct_robot._J_joint)
+    # print(ct_robot._J_link)
