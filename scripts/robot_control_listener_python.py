@@ -72,7 +72,8 @@ class RobotState:
         # pyrep instance
         self.pr = PyRep()
         self.pr.launch(
-            "/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt"
+            "/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt",
+            headless=True,
         )
         self.dt = 0.01
         self.pr.set_simulation_timestep(self.dt)
@@ -118,7 +119,9 @@ class RobotState:
             # step one: find corresponding rotation matrix
             # for the current implementation, rotation is only on one axis, accurate to
             # 1 degree.
-            if data.angular.y != 0:  # due to difference of screen frame and world frame y is -x
+
+            # due to difference of screen frame and world frame y is -x
+            if data.angular.y != 0:
                 theta = np.radians(-data.angular.y)
                 c, s = np.cos(theta), np.sin(theta)
                 rot_mat = np.array([[1, 0, 0], [0, c, -s], [0, s, c]])
@@ -151,7 +154,8 @@ class RobotState:
 
             self.publish_robot_status()
 
-        else: # if needle is not retracted, WARN (subject to change as safety precautions change)
+        # if needle is not retracted, WARN (subject to change as safety precautions change)
+        else:
             rospy.logwarn(
                 "Needle (pos=%.1f) not retracted, cannot move robot." % self.needle_pos
             )
@@ -203,11 +207,15 @@ class RobotState:
         """
         update robot status into a Transform form, and publish over a topic
         """
-        self.robot_status.translation.x = self.pos[0]
-        self.robot_status.translation.y = self.pos[1]
-        self.robot_status.translation.z = self.pos[2]
 
-        quat = euler.euler2quat(self.ori[0], self.ori[1], self.ori[2])
+        # unit base in 3d slicer 'mm' , convert by multipling 1000
+        self.robot_status.translation.x = self.pos[0] * 1000
+        self.robot_status.translation.y = self.pos[1] * 1000
+        self.robot_status.translation.z = self.pos[2] * 1000
+
+        # find the quaternion for the current orientation 
+        # parameter 'axes' corrects for frame differences
+        quat = euler.euler2quat(self.ori[0], self.ori[1], self.ori[2], axes="sxyz")
         self.robot_status.rotation.w = quat[0]
         self.robot_status.rotation.x = quat[1]
         self.robot_status.rotation.y = quat[2]
@@ -217,8 +225,6 @@ class RobotState:
 
 
 if __name__ == "__main__":
-
-    print(f"current working directory: {os.getcwd()}")
 
     robot = RobotState()
     robot.update_state()
