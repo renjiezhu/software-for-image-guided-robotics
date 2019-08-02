@@ -2,12 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="790235c9-5473-4fb6-884a-c6635268d387" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/vrep_robot_control/.ipynb_checkpoints/FK-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/vrep_robot_control/.ipynb_checkpoints/FK-checkpoint.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vrep_robot_control/.ipynb_checkpoints/Untitled-checkpoint.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vrep_robot_control/FK.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/vrep_robot_control/FK.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vrep_robot_control/Robot_config.ttt" beforeDir="false" afterPath="$PROJECT_DIR$/vrep_robot_control/Robot_config.ttt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vrep_robot_control/Untitled.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vrep_robot_control/my_rigid_kinematics.py" beforeDir="false" afterPath="$PROJECT_DIR$/vrep_robot_control/my_rigid_kinematics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vrep_robot_control/.ipynb_checkpoints/FK-checkpoint.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vrep_robot_control/DH_ct1.ttt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vrep_robot_control/FK.ipynb" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -21,7 +18,7 @@
         <entry file="file://$PROJECT_DIR$/vrep_robot_control/my_rigid_kinematics.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="360">
-              <caret line="24" column="65" lean-forward="true" selection-start-line="24" selection-start-column="65" selection-end-line="24" selection-end-column="65" />
+              <caret line="24" column="65" selection-start-line="24" selection-start-column="65" selection-end-line="24" selection-end-column="65" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -33,7 +30,7 @@
         <entry file="file://$PROJECT_DIR$/.gitignore">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="151">
-              <caret line="15" column="15" lean-forward="true" selection-start-line="15" selection-start-column="15" selection-end-line="15" selection-end-column="15" />
+              <caret line="15" column="15" selection-start-line="15" selection-start-column="15" selection-end-line="15" selection-end-column="15" />
             </state>
           </provider>
         </entry>
@@ -84,8 +81,15 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
   </component>
@@ -132,12 +136,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1564618166992</updated>
-      <workItem from="1564618169741" duration="1081000" />
+      <workItem from="1564618169741" duration="1697000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1081000" />
+    <option name="totallyTimeSpent" value="1697000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="260" y="53" width="1400" height="1000" extended-state="0" />
@@ -172,14 +176,14 @@
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="151">
-          <caret line="15" column="15" lean-forward="true" selection-start-line="15" selection-start-column="15" selection-end-line="15" selection-end-column="15" />
+          <caret line="15" column="15" selection-start-line="15" selection-start-column="15" selection-end-line="15" selection-end-column="15" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vrep_robot_control/my_rigid_kinematics.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="360">
-          <caret line="24" column="65" lean-forward="true" selection-start-line="24" selection-start-column="65" selection-end-line="24" selection-end-column="65" />
+          <caret line="24" column="65" selection-start-line="24" selection-start-column="65" selection-end-line="24" selection-end-column="65" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>

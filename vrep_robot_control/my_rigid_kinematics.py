@@ -18,7 +18,7 @@ class dh_robot_config:
     The Mass and Inertia matrix, Gravity matrix are also included with respect to 
     '''
     
-    def __init__(self, num_joints, alpha, theta, D, a, jointType, ai, aj, ak):
+    def __init__(self, num_joints, alpha, theta, D, a, jointType, Tbase):
         
         '''D-H parameter includes: D, a, alpha, theta
         ai, aj, ak are the euler transformation of base with respect to the world frame
@@ -37,8 +37,7 @@ class dh_robot_config:
         self.dq = [sp.Symbol('dq%i' % (ii+1)) for ii in range(self.num_joints)]
         self.x = [sp.Symbol('x'), sp.Symbol('y'), sp.Symbol('z')]
              
-        self._Tbase = np.eye(4)
-        self._Tbase[:3,:3] = t3d.euler.euler2mat(ai, aj, ak)  #construct base transform
+        self._Tbase = Tbase
         self._Tj2j = []  # transformation from joint to joint
         self._Tj2l = []  # transformation from joint to link
         self._Tjoint = []  # transformation from base frame to joint
@@ -113,7 +112,8 @@ class dh_robot_config:
                 self._Tlink.append(self._Tjoint[i-1]*self._Tj2l[i])
             else:
                 self._Tlink.append(self._Tbase*self._Tj2l[i])
-            # Rotation matrix of joint and link that can be called
+            '''
+            # Rotation matrix of joint and link that can be calledb
             if i < self.num_joints:
                 self._Rjointlambda.append(sp.lambdify(self.q, self._Tjoint[i][:3,:3]))
             self._Rlinklambda.append(sp.lambdify(self.q, self._Tlink[i][:3,:3]))
@@ -147,7 +147,7 @@ class dh_robot_config:
             # calculate mass and gravity matrix in joint space
         self._Mq.append(self._calc_Mq(lambdify=True))
         self._Gq.append(self._calc_Gq(lambdify=True))
-
+        '''
     def _calc_Tx(self, T, lambdify = True):
         Tx =  T * sp.Matrix(self.x + [1])  # appends a 1 to the column vector x
         if lambdify:
