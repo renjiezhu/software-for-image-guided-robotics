@@ -6,6 +6,7 @@
  * 
  * Topics Published:
  * * robot_status_TRANSFORM (geometry_msgs/Transform)
+ * * robot_status_TWIST (geometry_msgs/Twist)
  *
  * Topics Subscribed:
  * * robot_movement (geometry_msgs/Twist)
@@ -60,9 +61,11 @@ class RobotState:
 
         # publisher of the current robot position in a format of geometry_msgs::Twist
         self.robot_status_pub = rospy.Publisher(
-            "robot_status_TRANSFORM", Transform, queue_size=1
+            # "robot_status_TRANSFORM", Transform, queue_size=1
+            "robot_status_TWIST", Twist, queue_size=1,
         )
-        self.robot_status = Transform()
+        # self.robot_status = Transform()
+        self.robot_status = Twist()
 
         # dirty markers
         self.dirty = False
@@ -209,18 +212,23 @@ class RobotState:
         """
 
         # unit base in 3d slicer 'mm' , convert by multipling 1000
-        self.robot_status.translation.x = self.pos[0] * 1000
-        self.robot_status.translation.y = self.pos[1] * 1000
-        self.robot_status.translation.z = self.pos[2] * 1000
+        self.robot_status.linear.x = self.pos[0] * 1000
+        self.robot_status.linear.y = self.pos[1] * 1000
+        self.robot_status.linear.z = self.pos[2] * 1000
 
         # find the quaternion for the current orientation 
         # parameter 'axes' corrects for frame differences
-        quat = euler.euler2quat(self.ori[0], self.ori[1], self.ori[2], axes="sxyz")
-        self.robot_status.rotation.w = quat[0]
-        self.robot_status.rotation.x = quat[1]
-        self.robot_status.rotation.y = quat[2]
-        self.robot_status.rotation.z = quat[3]
+        # quat = euler.euler2quat(self.ori[0], self.ori[1], self.ori[2], axes="sxyz")
+        # self.robot_status.rotation.w = quat[0]
+        # self.robot_status.rotation.x = quat[1]
+        # self.robot_status.rotation.y = quat[2]
+        # self.robot_status.rotation.z = quat[3]
 
+        self.robot_status.angular.x = self.ori[0]
+        self.robot_status.angular.y = self.ori[1]
+        self.robot_status.angular.z = self.ori[2]
+        
+        
         self.robot_status_pub.publish(self.robot_status)
 
 
