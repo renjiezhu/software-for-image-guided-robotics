@@ -4,7 +4,6 @@ import sympy as sp
 import transforms3d as t3d
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.axes3d import Axes3D
-from config import *
 import cloudpickle
 import time #for testing code speed
 
@@ -18,7 +17,7 @@ class dh_robot_config:
     The Mass and Inertia matrix, Gravity matrix are also included with respect to 
     '''
     
-    def __init__(self, num_joints, alpha, theta, D, a, jointType, Tbase):
+    def __init__(self, num_joints, alpha, theta, D, a, jointType, Tbase, L, M):
         
         '''D-H parameter includes: D, a, alpha, theta
         ai, aj, ak are the euler transformation of base with respect to the world frame
@@ -112,7 +111,7 @@ class dh_robot_config:
                 self._Tlink.append(self._Tjoint[i-1]*self._Tj2l[i])
             else:
                 self._Tlink.append(self._Tbase*self._Tj2l[i])
-            '''
+            
             # Rotation matrix of joint and link that can be calledb
             if i < self.num_joints:
                 self._Rjointlambda.append(sp.lambdify(self.q, self._Tjoint[i][:3,:3]))
@@ -143,11 +142,12 @@ class dh_robot_config:
             self._J_position_link.append(self._calc_J_position(self._Tlink[i], lambdify = True))
             self._J_orientation_link.append(self._calc_J_orientation(self._Tlink[i], i, lambdify = True))
             self._J_link.append(self._calc_J(self._Tlink[i], i, lambdify = True))
-            print(len(self._J_link))
+            print('Calculating link %d' % i)
             # calculate mass and gravity matrix in joint space
         self._Mq.append(self._calc_Mq(lambdify=True))
         self._Gq.append(self._calc_Gq(lambdify=True))
-        '''
+        print('Calculating complete')
+        
     def _calc_Tx(self, T, lambdify = True):
         Tx =  T * sp.Matrix(self.x + [1])  # appends a 1 to the column vector x
         if lambdify:
@@ -216,8 +216,8 @@ class dh_robot_config:
         """
 
         # check to see if we have our inertia matrix saved in file
-        if os.path.isfile('%s/Mq' % self.config_folder):
-            Mq = cloudpickle.load(open('%s/Mq' % self.config_folder, 'rb'))
+        if os.path.isfile('./%s/Mq' % self.config_folder):
+            Mq = cloudpickle.load(open('./%s/Mq' % self.config_folder, 'rb'))
         else:
             # transform each inertia matrix into joint space
             # sum together the effects of arm segments' inertia on each motor
@@ -226,7 +226,7 @@ class dh_robot_config:
                 Mq += self._J_link[ii].T * self._M[ii] * self._J_link[ii]
             Mq = sp.Matrix(Mq)
             # save to file
-            # cloudpickle.dump(Mq, open('%s/Mq' % self.config_folder, 'wb'))
+            cloudpickle.dump(Mq, open('./%s/Mq' % self.config_folder, 'wb'))
         if lambdify is False:
             return Mq
         return sp.lambdify(self.q + self.x, Mq)
@@ -239,8 +239,8 @@ class dh_robot_config:
                           matrix
         """
         # check to see if we have our gravity term saved in file
-        if os.path.isfile('%s/Gq' % self.config_folder):
-            Gq = cloudpickle.load(open('%s/Gq' % self.config_folder,
+        if os.path.isfile('./%s/Gq' % self.config_folder):
+            Gq = cloudpickle.load(open('./%s/Gq' % self.config_folder,
                                          'rb'))
         else:
             # transform each inertia matrix into joint space and
@@ -250,8 +250,7 @@ class dh_robot_config:
                 Gq += self._J_link[ii].T * self._M[ii] * self.gravity
             Gq = sp.Matrix(Gq)
             # save to file
-            # cloudpickle.dump(Gq, open('%s/Gq' % self.config_folder,
-            #                            'wb'))
+            cloudpickle.dump(Gq, open('./%s/Gq' % self.config_folder, 'wb'))
         if lambdify is False:
             return Gq
         return sp.lambdify(self.q + self.x, Gq)
