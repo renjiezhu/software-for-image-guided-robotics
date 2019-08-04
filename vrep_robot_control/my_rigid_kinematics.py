@@ -240,8 +240,7 @@ class dh_robot_config:
         """
         # check to see if we have our gravity term saved in file
         if os.path.isfile('./%s/Gq' % self.config_folder):
-            Gq = cloudpickle.load(open('./%s/Gq' % self.config_folder,
-                                         'rb'))
+            Gq = cloudpickle.load(open('./%s/Gq' % self.config_folder, 'rb'))
         else:
             # transform each inertia matrix into joint space and
             # sum together the effects of arm segments' inertia on each motor

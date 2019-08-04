@@ -1,6 +1,6 @@
 import numpy as np
 
-def cacl_torque(robot, posd, posm, veld, velm, xyz, accd=None):
+def cacl_torque(robot, kv, kp, posd, posm, veld, velm, xyz, accd=None):
     '''
     robot: Class that contains dynamic information of robot
     posd: numpy array of dimension 6 representing desired position and orientation of joint
@@ -9,8 +9,6 @@ def cacl_torque(robot, posd, posm, veld, velm, xyz, accd=None):
     velm: numpy array of dimension 6 representing measured velocity of joint
     '''
     num_joints = robot.num_joints
-    kv = np.diag([100, 200, 300, 200, 100, 15, 27.5])
-    kp = np.diag([20, 100, 30, 40, 80, 5, 7])
     M = np.array(robot._Mq[0](*tuple(np.concatenate((posm, xyz)))))
     G = np.array(robot._Gq[0](*tuple(np.concatenate((posm, xyz))))).reshape(num_joints, 1)
     gain_v = kv.dot((veld-velm).reshape(num_joints, 1))
