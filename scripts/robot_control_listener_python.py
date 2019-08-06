@@ -7,6 +7,7 @@
  * Topics Published:
  * * robot_status_TRANSFORM (geometry_msgs/Transform)
  * * robot_status_TWIST (geometry_msgs/Twist)
+ * * joint_angles
  *
  * Topics Subscribed:
  * * robot_movement (geometry_msgs/Twist)
@@ -22,6 +23,7 @@ import numpy as np
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Transform
 from std_msgs.msg import Float64
+from software_interface.msg import JointAngles
 
 import transforms3d.euler as euler
 
@@ -32,8 +34,8 @@ import sys
 # sys.path.append("./src/software_interface")
 # import os
 # print(f"current working directory: {os.getcwd()}")
-# sys.path.append("/home/renjie/Documents/igr/src/software_interface/")
-sys.path.append("/home/guosong/Documents/igr/src/software_interface/")
+sys.path.append("/home/renjie/Documents/igr/src/software_interface/")
+# sys.path.append("/home/guosong/Documents/igr/src/software_interface/")
 from pyrep import PyRep
 from vrep_robot_control.ct_robot_control import IK_via_vrep
 from vrep_robot_control.arm import CtRobot
@@ -68,6 +70,11 @@ class RobotState:
         # self.robot_status = Transform()
         self.robot_status = Twist()
 
+        # publisher of joint angles
+        self.joint_angles_pub = rospy.Publisher('joint_angles', JointAngles, queue_size=10)
+        self.joint_angles_msg = JointAngles()
+        self.rate = rospy.Rate(10) # 10hz
+
         # dirty markers
         self.dirty = False
         self.needle_dirty = False
@@ -76,8 +83,8 @@ class RobotState:
         # pyrep instance
         self.pr = PyRep()
         self.pr.launch(
-            "/home/guosong/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt",
-            headless=False,
+            "/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt",
+            headless=True,
         )
         self.dt = 0.01
         self.pr.set_simulation_timestep(self.dt)
@@ -188,6 +195,7 @@ class RobotState:
         rospy.Subscriber("robot_movement", Twist, self.robot_pos_callback)
 
         signal.signal(signal.SIGINT, self.signal_handler)
+        self.send_joint_angles()
         rospy.spin()
 
     def update_vrep(self):
@@ -232,9 +240,27 @@ class RobotState:
         
         self.robot_status_pub.publish(self.robot_status)
 
+    def send_joint_angles(self):
+
+        while not rospy.is_shutdown():
+            joint_angles_msg = JointAngles()
+            joint_angles_vrep = self.ct_robot.get_joint_positions()
+
+            joint_angles_msg.joint0 = joint_angles_vrep[0]
+            joint_angles_msg.joint1 = joint_angles_vrep[1]
+            joint_angles_msg.joint2 = joint_angles_vrep[2]
+            joint_angles_msg.joint3 = joint_angles_vrep[3]
+            joint_angles_msg.joint4 = joint_angles_vrep[4]
+            joint_angles_msg.joint5 = joint_angles_vrep[5]
+            joint_angles_msg.joint6 = joint_angles_vrep[6]
+
+            self.joint_angles_pub.publish(self.joint_angles_msg)
+            self.rate.sleep()
 
 if __name__ == "__main__":
 
     robot = RobotState()
     robot.update_state()
+    # robot.send_joint_angles()
+
 
