@@ -56,6 +56,8 @@ class dh_robot_config:
         self._J_orientation_link = []
         self._J_joint = []
         self._J_link = []
+        self._J_jointlambda = []
+        self._J_linklambda = []
         
         # accounting for mass and gravity term
         self._M = []
@@ -135,18 +137,25 @@ class dh_robot_config:
             self._Tx_inv_link.append(sp.lambdify(self.q + self.x, Tx_inv))
             # calculate jacobian of joint
             if i < self.num_joints:
+                # print('Calculating joint %d' % (i+1))
+                # print('-------------------------------------------------------------------')
                 self._J_position_joint.append(self._calc_J_position(self._Tjoint[i], lambdify = True))
                 self._J_orientation_joint.append(self._calc_J_orientation(self._Tjoint[i], i, lambdify = True))
-                self._J_joint.append(self._calc_J(self._Tjoint[i], i, lambdify = True))
+                self._J_joint.append(self._calc_J(self._Tjoint[i], i, 'joint', lambdify = True))
+                self._J_jointlambda.append(self._calc_J(self._Tjoint[i], i, 'joint', lambdify = False))
+            print('Calculating link %d' % i)
             # calculate jacobian of link
             self._J_position_link.append(self._calc_J_position(self._Tlink[i], lambdify = True))
             self._J_orientation_link.append(self._calc_J_orientation(self._Tlink[i], i, lambdify = True))
-            self._J_link.append(self._calc_J(self._Tlink[i], i, lambdify = True))
-            print('Calculating link %d' % i)
-            # calculate mass and gravity matrix in joint space
+            self._J_link.append(self._calc_J(self._Tlink[i], i, 'link', lambdify = True))
+            self._J_linklambda.append(self._calc_J(self._Tlink[i], i, 'link', lambdify = False))
+
+        # calculate mass and gravity matrix in joint space
+        print('Calculating Mass and Gravity Matrix...')
+        print('-------------------------------------------------------------------')
         self._Mq.append(self._calc_Mq(lambdify=True))
         self._Gq.append(self._calc_Gq(lambdify=True))
-        print('Calculating complete')
+        print('Calculation complete')
         
     def _calc_Tx(self, T, lambdify = True):
         Tx =  T * sp.Matrix(self.x + [1])  # appends a 1 to the column vector x
@@ -193,12 +202,17 @@ class dh_robot_config:
             return sp.lambdify(self.q + self.x, J)
         return J
     
-    def _calc_J(self, T, i, lambdify=True):
-        x = self._calc_J_position(T, lambdify=False)
-        y = self._calc_J_orientation(T, i, lambdify=False)
+    def _calc_J(self, T, i, T_type, lambdify=True):
+        if os.path.isfile('./%s/J/J_%s%d' % (self.config_folder, T_type, i)):
+            J = cloudpickle.load(open('./%s/J/J_%s%d' % (self.config_folder, T_type, i), 'rb'))
+        else:
+            x = self._calc_J_position(T, lambdify=False)
+            y = self._calc_J_orientation(T, i, lambdify=False)
+            J = x.col_join(y)
+            cloudpickle.dump(J, open('./%s/J/J_%s%d' % (self.config_folder, T_type, i), 'wb'))
         if lambdify:
-                sp.lambdify(self.q + self.x, x.col_join(y))
-        return x.col_join(y)
+            return sp.lambdify(self.q + self.x, J)
+        return J
         
     def Jx(self, T, q, x=[0, 0, 0]):
         parameters = tuple(q) + tuple(x)
@@ -223,7 +237,7 @@ class dh_robot_config:
             # sum together the effects of arm segments' inertia on each motor
             Mq = sp.zeros(self.num_joints)
             for ii in range(self.num_links):
-                Mq += self._J_link[ii].T * self._M[ii] * self._J_link[ii]
+                Mq += self._J_linklambda[ii].T * self._M[ii] * self._J_linklambda[ii]
             Mq = sp.Matrix(Mq)
             # save to file
             cloudpickle.dump(Mq, open('./%s/Mq' % self.config_folder, 'wb'))
@@ -246,7 +260,7 @@ class dh_robot_config:
             # sum together the effects of arm segments' inertia on each motor
             Gq = sp.zeros(self.num_joints, 1)
             for ii in range(self.num_joints):
-                Gq += self._J_link[ii].T * self._M[ii] * self.gravity
+                Gq += self._J_linklambda[ii].T * self._M[ii] * self.gravity
             Gq = sp.Matrix(Gq)
             # save to file
             cloudpickle.dump(Gq, open('./%s/Gq' % self.config_folder, 'wb'))
@@ -323,8 +337,15 @@ def plot_sphere(position, radius, ax, color='g', linewidth=0):
     return ax.plot_surface(x, y, z, rstride=4, cstride=4,
 color=color, linewidth=0)       
     
+
+
+
 if __name__ == '__main__':
-    ct_robot = dh_robot_config(num_joints, alpha, theta, D, a, jointType, ai, aj, ak)
-    ct_robot.initKinematicTransforms()
-    # print(ct_robot._J_joint)
-    # print(ct_robot._J_link)
+    param = ['D', 'a', 'alpha', 'theta', 'num_joints', 'jointType', 'Tbase', 'L', 'M']
+    config = dict()
+    for i in range(len(param)):
+        config[param[i]] = np.load('./robot_config/config1/%s.npy'%param[i])
+    
+    robot = dh_robot_config(int(config['num_joints']), config['alpha'], config['theta'], config['D'], config['a'], 
+                                                config['jointType'], config['Tbase'], config['L'], config['M'])
+    robot.initKinematicTransforms()
