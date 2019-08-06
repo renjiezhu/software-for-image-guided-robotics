@@ -262,6 +262,6 @@ if __name__ == "__main__":
 
     robot = RobotState()
     robot.update_state()
-    # robot.send_joint_angles()
+
 
 
