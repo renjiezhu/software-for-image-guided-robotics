@@ -56,7 +56,7 @@ import rospy
 from software_interface.msg import JointAngles
 
 def callback(data):
-    rospy.loginfo("I heard %s", data.joint0)
+    rospy.loginfo("I heard %s", data.joint0.data)
     
 def listener():
 

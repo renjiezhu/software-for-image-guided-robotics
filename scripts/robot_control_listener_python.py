@@ -243,16 +243,17 @@ class RobotState:
     def send_joint_angles(self):
 
         while not rospy.is_shutdown():
-            joint_angles_msg = JointAngles()
+
             joint_angles_vrep = self.ct_robot.get_joint_positions()
 
-            joint_angles_msg.joint0 = joint_angles_vrep[0]
-            joint_angles_msg.joint1 = joint_angles_vrep[1]
-            joint_angles_msg.joint2 = joint_angles_vrep[2]
-            joint_angles_msg.joint3 = joint_angles_vrep[3]
-            joint_angles_msg.joint4 = joint_angles_vrep[4]
-            joint_angles_msg.joint5 = joint_angles_vrep[5]
-            joint_angles_msg.joint6 = joint_angles_vrep[6]
+            self.joint_angles_msg.joint0.data = joint_angles_vrep[0]
+            self.joint_angles_msg.joint1.data = joint_angles_vrep[1]
+            self.joint_angles_msg.joint2.data = joint_angles_vrep[2]
+            self.joint_angles_msg.joint3.data = joint_angles_vrep[3]
+            self.joint_angles_msg.joint4.data = joint_angles_vrep[4]
+            self.joint_angles_msg.joint5.data = joint_angles_vrep[5]
+            self.joint_angles_msg.joint6.data = joint_angles_vrep[6]
+            
 
             self.joint_angles_pub.publish(self.joint_angles_msg)
             self.rate.sleep()

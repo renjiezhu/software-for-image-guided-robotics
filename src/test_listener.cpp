@@ -11,6 +11,7 @@
 
 #include "ros/ros.h"
 #include "std_msgs/Bool.h"
+#include "software_interface/JointAngles.h"
 
 void keyboardCallback(const std_msgs::BoolConstPtr &input)
 {
