@@ -32,7 +32,8 @@ import sys
 # sys.path.append("./src/software_interface")
 # import os
 # print(f"current working directory: {os.getcwd()}")
-sys.path.append("/home/renjie/Documents/igr/src/software_interface/")
+# sys.path.append("/home/renjie/Documents/igr/src/software_interface/")
+sys.path.append("/home/guosong/Documents/igr/src/software_interface/")
 from pyrep import PyRep
 from vrep_robot_control.ct_robot_control import IK_via_vrep
 from vrep_robot_control.arm import CtRobot
@@ -75,8 +76,8 @@ class RobotState:
         # pyrep instance
         self.pr = PyRep()
         self.pr.launch(
-            "/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt",
-            headless=True,
+            "/home/guosong/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt",
+            headless=False,
         )
         self.dt = 0.01
         self.pr.set_simulation_timestep(self.dt)
