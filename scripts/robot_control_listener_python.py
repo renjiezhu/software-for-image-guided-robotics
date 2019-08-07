@@ -6,7 +6,7 @@
  * 
  * Topics Published:
  * * robot_status_TRANSFORM (geometry_msgs/Transform)
- * * robot_status_TWIST (geometry_msgs/Twist)
+ * * robot_status_TWIST (geometry_msgs/Twist) (deprecated)
  * * joint_angles
  *
  * Topics Subscribed:
