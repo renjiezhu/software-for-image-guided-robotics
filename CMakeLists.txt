@@ -54,6 +54,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   JointAngles.msg
+  Torque.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -210,11 +211,11 @@ include_directories(
 # add_executable(world_to_base src/world_to_base_client.cpp)
 # target_link_libraries(world_to_base ${catkin_LIBRARIES})
 
-add_executable(robot_control_key src/robot_control_key.cpp)
-target_link_libraries(robot_control_key ${catkin_LIBRARIES})
+add_executable(keyboard_control src/keyboard_control.cpp)
+target_link_libraries(keyboard_control ${catkin_LIBRARIES})
 
 # add_executable(robot_ ener src/robot_control_listener.cpp)
 # target_link_libraries(robot_control_listener ${catkin_LIBRARIES})
 
-add_executable(test_listener src/test_listener.cpp)
-target_link_libraries(test_listener ${catkin_LIBRARIES})
+# add_executable(test_listener src/test_listener.cpp)
+# target_link_libraries(test_listener ${catkin_LIBRARIES})

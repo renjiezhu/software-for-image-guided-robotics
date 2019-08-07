@@ -250,6 +250,8 @@ class RobotState:
 
         while not rospy.is_shutdown():
 
+            joint_angles_vrep = self.ct_robot.get_joint_positions()
+
             self.joint_angles_msg.joint0.data = joint_angles_vrep[0]
             self.joint_angles_msg.joint1.data = joint_angles_vrep[1]
             self.joint_angles_msg.joint2.data = joint_angles_vrep[2]
