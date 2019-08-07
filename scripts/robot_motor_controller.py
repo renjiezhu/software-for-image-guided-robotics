@@ -61,7 +61,7 @@ class RobotMotors:
 
         print("joint angles", setpoint_arm.tolist())
 
-        self.myArm.commandJoints(self.motors, setpoint_arm)
+        self.myArm.commandJoints(self.motors, setpoint_arm, trajectory=False)
 
     def update_joint_angles(self):
 
