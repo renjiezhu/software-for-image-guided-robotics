@@ -2,12 +2,12 @@
 """
  * Software Interface for Image Guided Robotics
  * 
- * Listerner 
+ * robot_simulation
  * 
  * Topics Published:
  * * robot_status_TRANSFORM (geometry_msgs/Transform)
  * * robot_status_TWIST (geometry_msgs/Twist) (deprecated)
- * * joint_angles
+ * * joint_angles (software_interface/JointAngles)
  *
  * Topics Subscribed:
  * * robot_movement (geometry_msgs/Twist)
@@ -51,7 +51,7 @@ class RobotState:
 
     def __init__(self):
 
-        rospy.init_node("robot_control_listener_python", anonymous=True)
+        rospy.init_node("robot_simulation", anonymous=True)
         rospy.loginfo("V-REP update node is initialized...")
 
         # keep track of current robot position, orientation and needle position
