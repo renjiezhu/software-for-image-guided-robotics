@@ -1,8 +1,8 @@
 <launch>
-  <!-- <node name="python_listener" pkg="software_interface" type="robot_control_listener_python.py" output="screen"/> -->
-  <node name="python_listener" pkg="software_interface" type="robot_control_listener_python.py" />
 
-  <node name="keyboard_input" pkg="software_interface" type="robot_control_key" output="screen"/>
+  <node name="robot_simulation" pkg="software_interface" type="robot_simulation.py" />
+
+  <node name="keyboard_input" pkg="software_interface" type="keyboard_control" output="screen"/>
 <!-- start the bridge -->
    <param name="RIB_server_ip" value="localhost" type="str"/>
    <param name="RIB_port" value="18944" type="int"/>
