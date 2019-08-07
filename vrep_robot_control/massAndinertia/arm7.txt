@@ -1,0 +1,33 @@
+Mass properties of needle_driveactive_moving
+     Configuration: Default
+     Coordinate system: Coordinate System1
+
+The center of mass and the moments of inertia are output in the coordinate system of ct_robot_assembly
+Mass = 14.91 grams
+
+Volume = 14016.28 cubic millimeters
+
+Surface area = 10699.66  square millimeters
+
+Center of mass: ( millimeters )
+	X = 1.93
+	Y = 161.74
+	Z = 761.56
+
+Principal axes of inertia and principal moments of inertia: ( grams *  square millimeters )
+Taken at the center of mass.
+	 Ix = ( 0.00,  0.67, -0.74)   	Px = 1409.97
+	 Iy = ( 0.29, -0.71, -0.64)   	Py = 3349.39
+	 Iz = (-0.96, -0.22, -0.19)   	Pz = 4046.30
+
+Moments of inertia: ( grams *  square millimeters )
+Taken at the center of mass and aligned with the output coordinate system.
+	Lxx = 3986.90	Lxy = -148.76	Lxz = -125.58
+	Lyx = -148.76	Lyy = 2510.81	Lyz = -994.23
+	Lzx = -125.58	Lzy = -994.23	Lzz = 2307.95
+
+Moments of inertia: ( grams *  square millimeters )
+Taken at the output coordinate system.
+	Ixx = 9041965.57	Ixy = 4509.98	Ixz = 21810.33
+	Iyx = 4509.98	Iyy = 8650480.01	Iyz = 1835646.52
+	Izx = 21810.33	Izy = 1835646.52	Izz = 392428.69
