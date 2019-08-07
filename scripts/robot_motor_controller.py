@@ -11,7 +11,7 @@ import sys
 
 # sys.path.append("..")
 # sys.path.append("../../")
-# sys.path.append("/home/guosong/Documents/DH_Kinematics/robot_controls_library/")
+sys.path.append("/home/guosong/Documents/DH_Kinematics/robot_controls_library/")
 import armControl
 from forwardKinematics import robot_config
 from utils.motor_setup import maxonGearSmall
@@ -25,7 +25,7 @@ class RobotMotors:
         rospy.init_node("motor_controller", anonymous=True)
         rospy.loginfo("Motor controller started ...")
 
-        self.socket_ip = "192.168.0.115"
+        self.socket_ip = "192.168.0.117"
         self.socket_port = 1122
 
         self.motors = maxonGearSmall()
@@ -59,6 +59,8 @@ class RobotMotors:
         setpoint_arm[5] = input_data.joint5.data
         setpoint_arm[6] = input_data.joint6.data
 
+        print("joint angles", setpoint_arm.tolist())
+
         self.myArm.commandJoints(self.motors, setpoint_arm)
 
     def update_joint_angles(self):
@@ -70,21 +72,7 @@ class RobotMotors:
         rospy.spin()
 
 
-def listener():
-
-    # In ROS, nodes are uniquely named. If two nodes with the same
-    # name are launched, the previous one is kicked off. The
-    # anonymous=True flag means that rospy will choose a unique
-    # name for our 'listener' node so that multiple listeners can
-    # run simultaneously.
-    rospy.init_node("listener", anonymous=True)
-
-    rospy.Subscriber("joint_angles", JointAngles, callback)
-
-    # spin() simply keeps python from exiting until this node is stopped
-    rospy.spin()
-
 
 if __name__ == "__main__":
-    listener()
-
+    motor = RobotMotors()
+    motor.update_joint_angles()

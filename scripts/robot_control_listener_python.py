@@ -30,12 +30,14 @@ import transforms3d.euler as euler
 import signal
 import sys
 
+import time
+
 # sys.path.append(".")
 # sys.path.append("./src/software_interface")
 # import os
 # print(f"current working directory: {os.getcwd()}")
-sys.path.append("/home/renjie/Documents/igr/src/software_interface/")
-# sys.path.append("/home/guosong/Documents/igr/src/software_interface/")
+# sys.path.append("/home/renjie/Documents/igr/src/software_interface/")
+sys.path.append("/home/guosong/Documents/igr/src/software_interface/")
 from pyrep import PyRep
 from vrep_robot_control.ct_robot_control import IK_via_vrep
 from vrep_robot_control.arm import CtRobot
@@ -71,9 +73,9 @@ class RobotState:
         self.robot_status = Twist()
 
         # publisher of joint angles
-        self.joint_angles_pub = rospy.Publisher('joint_angles', JointAngles, queue_size=10)
+        self.joint_angles_pub = rospy.Publisher('joint_angles', JointAngles, queue_size=1)
         self.joint_angles_msg = JointAngles()
-        self.rate = rospy.Rate(10) # 10hz
+        self.rate = rospy.Rate(100) # 100hz
 
         # dirty markers
         self.dirty = False
@@ -83,8 +85,8 @@ class RobotState:
         # pyrep instance
         self.pr = PyRep()
         self.pr.launch(
-            "/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt",
-            headless=True,
+            "/home/guosong/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt",
+            headless=False,
         )
         self.dt = 0.01
         self.pr.set_simulation_timestep(self.dt)
@@ -243,9 +245,9 @@ class RobotState:
     def send_joint_angles(self):
 
         while not rospy.is_shutdown():
-
+            ts = time.time()
             joint_angles_vrep = self.ct_robot.get_joint_positions()
-
+            print((time.time()-ts))
             self.joint_angles_msg.joint0.data = joint_angles_vrep[0]
             self.joint_angles_msg.joint1.data = joint_angles_vrep[1]
             self.joint_angles_msg.joint2.data = joint_angles_vrep[2]
