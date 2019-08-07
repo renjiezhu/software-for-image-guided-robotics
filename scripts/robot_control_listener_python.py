@@ -6,6 +6,8 @@
  * 
  * Topics Published:
  * * robot_status_TRANSFORM (geometry_msgs/Transform)
+ * * robot_status_TWIST (geometry_msgs/Twist)
+ * * joint_angles
  *
  * Topics Subscribed:
  * * robot_movement (geometry_msgs/Twist)
@@ -21,6 +23,7 @@ import numpy as np
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Transform
 from std_msgs.msg import Float64
+from software_interface.msg import JointAngles
 
 import transforms3d.euler as euler
 
@@ -32,6 +35,7 @@ import sys
 # import os
 # print(f"current working directory: {os.getcwd()}")
 sys.path.append("/home/renjie/Documents/igr/src/software_interface/")
+# sys.path.append("/home/guosong/Documents/igr/src/software_interface/")
 from pyrep import PyRep
 from vrep_robot_control.ct_robot_control import IK_via_vrep
 from vrep_robot_control.arm import CtRobot
@@ -60,9 +64,16 @@ class RobotState:
 
         # publisher of the current robot position in a format of geometry_msgs::Twist
         self.robot_status_pub = rospy.Publisher(
-            "robot_status_TRANSFORM", Transform, queue_size=1
+            # "robot_status_TRANSFORM", Transform, queue_size=1
+            "robot_status_TWIST", Twist, queue_size=1,
         )
-        self.robot_status = Transform()
+        # self.robot_status = Transform()
+        self.robot_status = Twist()
+
+        # publisher of joint angles
+        self.joint_angles_pub = rospy.Publisher('joint_angles', JointAngles, queue_size=1)
+        self.joint_angles_msg = JointAngles()
+        self.rate = rospy.Rate(100) # 100hz
 
         # dirty markers
         self.dirty = False
@@ -72,7 +83,8 @@ class RobotState:
         # pyrep instance
         self.pr = PyRep()
         self.pr.launch(
-            "/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt"
+            "/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt",
+            headless=False,
         )
         self.dt = 0.01
         self.pr.set_simulation_timestep(self.dt)
@@ -118,7 +130,9 @@ class RobotState:
             # step one: find corresponding rotation matrix
             # for the current implementation, rotation is only on one axis, accurate to
             # 1 degree.
-            if data.angular.y != 0:  # due to difference of screen frame and world frame y is -x
+
+            # due to difference of screen frame and world frame y is -x
+            if data.angular.y != 0:
                 theta = np.radians(-data.angular.y)
                 c, s = np.cos(theta), np.sin(theta)
                 rot_mat = np.array([[1, 0, 0], [0, c, -s], [0, s, c]])
@@ -151,7 +165,8 @@ class RobotState:
 
             self.publish_robot_status()
 
-        else: # if needle is not retracted, WARN (subject to change as safety precautions change)
+        # if needle is not retracted, WARN (subject to change as safety precautions change)
+        else:
             rospy.logwarn(
                 "Needle (pos=%.1f) not retracted, cannot move robot." % self.needle_pos
             )
@@ -180,6 +195,7 @@ class RobotState:
         rospy.Subscriber("robot_movement", Twist, self.robot_pos_callback)
 
         signal.signal(signal.SIGINT, self.signal_handler)
+        self.send_joint_angles()
         rospy.spin()
 
     def update_vrep(self):
@@ -203,23 +219,47 @@ class RobotState:
         """
         update robot status into a Transform form, and publish over a topic
         """
-        self.robot_status.translation.x = self.pos[0]
-        self.robot_status.translation.y = self.pos[1]
-        self.robot_status.translation.z = self.pos[2]
 
-        quat = euler.euler2quat(self.ori[0], self.ori[1], self.ori[2])
-        self.robot_status.rotation.w = quat[0]
-        self.robot_status.rotation.x = quat[1]
-        self.robot_status.rotation.y = quat[2]
-        self.robot_status.rotation.z = quat[3]
+        # unit base in 3d slicer 'mm' , convert by multipling 1000
+        self.robot_status.linear.x = self.pos[0] * 1000
+        self.robot_status.linear.y = self.pos[1] * 1000
+        self.robot_status.linear.z = self.pos[2] * 1000
 
+        # find the quaternion for the current orientation 
+        # parameter 'axes' corrects for frame differences
+        # quat = euler.euler2quat(self.ori[0], self.ori[1], self.ori[2], axes="sxyz")
+        # self.robot_status.rotation.w = quat[0]
+        # self.robot_status.rotation.x = quat[1]
+        # self.robot_status.rotation.y = quat[2]
+        # self.robot_status.rotation.z = quat[3]
+
+        self.robot_status.angular.x = self.ori[0]
+        self.robot_status.angular.y = self.ori[1]
+        self.robot_status.angular.z = self.ori[2]
+        
+        
         self.robot_status_pub.publish(self.robot_status)
 
+    def send_joint_angles(self):
+
+        while not rospy.is_shutdown():
+
+            self.joint_angles_msg.joint0.data = joint_angles_vrep[0]
+            self.joint_angles_msg.joint1.data = joint_angles_vrep[1]
+            self.joint_angles_msg.joint2.data = joint_angles_vrep[2]
+            self.joint_angles_msg.joint3.data = joint_angles_vrep[3]
+            self.joint_angles_msg.joint4.data = joint_angles_vrep[4]
+            self.joint_angles_msg.joint5.data = joint_angles_vrep[5]
+            self.joint_angles_msg.joint6.data = joint_angles_vrep[6]
+            
+
+            self.joint_angles_pub.publish(self.joint_angles_msg)
+            self.rate.sleep()
 
 if __name__ == "__main__":
 
-    print(f"current working directory: {os.getcwd()}")
-
     robot = RobotState()
     robot.update_state()
+
+
 

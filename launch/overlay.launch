@@ -1,0 +1,15 @@
+<launch>
+  <!-- <node name="python_listener" pkg="software_interface" type="robot_control_listener_python.py" output="screen"/> -->
+  <node name="python_listener" pkg="software_interface" type="robot_control_listener_python.py" />
+
+  <node name="keyboard_input" pkg="software_interface" type="robot_control_key" output="screen"/>
+<!-- start the bridge -->
+   <param name="RIB_server_ip" value="localhost" type="str"/>
+   <param name="RIB_port" value="18944" type="int"/>
+   <param name="RIB_type" value="server" type="str"/>
+   <node pkg="ros_igtl_bridge" type="ros_igtl_bridge_node" name="ros_igtl_bridge_node">
+   </node>
+<!-- start the test -->
+   <node pkg="ros_igtl_bridge" type="ros_igtl_bridge_needle" name="needle_overlay_server">
+   </node>
+</launch>
