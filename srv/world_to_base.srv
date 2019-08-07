@@ -1,7 +1,0 @@
-# input as world frame
-
-world_frame_state world_frame
----
-# output as base frame
-
-base_frame_state base_frame

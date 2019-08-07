@@ -1,4 +1,4 @@
-# Software for CT guided robotics
+# Software for Image Guided Robotics
 
 ROS software controlling a surgical robot (lung biopsy).
 
@@ -14,6 +14,15 @@ ROS software controlling a surgical robot (lung biopsy).
 |&#948;yaw|y|h|
 |&#948;needle|i|o|
 
+## Required packages
+
+- [pyrep](https://github.com/stepjam/PyRep)
 
 
+## How to run
 
+At root directory of the ROS workspace (commonly ```~/catkin_ws/```), run
+
+```
+roslaunch software_interface igr.launch
+```

@@ -3,9 +3,13 @@
  * 
  * Keyboard control 
  * 
- * Two Publishers:
- * * robot_pos_pub
- * * needle_pub
+ * Topics Published:
+ * * robot_movement
+ * * needle_insertion
+ * * simulation_confirmation
+ * 
+ * Topics Subscribed:
+ * 
  * 
  * By Renjie Zhu (rezhu@eng.ucsd.edu)
  * 
@@ -16,7 +20,7 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
 #include "std_msgs/Float64.h"
-#include "tf2/utils.h"
+#include "std_msgs/Bool.h"
 #include "signal.h"
 #include "termios.h"
 #include "stdio.h"
@@ -41,13 +45,16 @@ private:
     // test values
     double x, y, z, roll, pitch, yaw, z_needle;
 
+    short confirmed;
+
     ros::Publisher robot_pos_pub;
     ros::Publisher needle_pub;
+    ros::Publisher confirmation_pub;
 };
 
 // ctor
 RobotControlKey::RobotControlKey()
-    : x(0), y(0), z(0), roll(0), pitch(0), yaw(0), z_needle(0)
+    : x(0), y(0), z(0), roll(0), pitch(0), yaw(0), z_needle(0), confirmed(0)
 {
 
     nh.param("x", x, x);
@@ -60,6 +67,7 @@ RobotControlKey::RobotControlKey()
 
     robot_pos_pub = nh.advertise<geometry_msgs::Twist>("robot_movement", 1);
     needle_pub = nh.advertise<std_msgs::Float64>("needle_insertion", 1);
+    confirmation_pub = nh.advertise<std_msgs::Bool>("simulation_confirmation", 1);
 }
 
 int kfd = 0;
@@ -128,67 +136,67 @@ void RobotControlKey::keyLoop()
         {
         case KEYCODE_L:
             // --x;
-            x=-1;
+            x = -1;
             ROS_DEBUG("X - ,   x=%1d", (int)x);
             dirty = true;
             break;
         case KEYCODE_R:
             // ++x;
-            x=1;
+            x = 1;
             ROS_DEBUG("X + ,   x=%1d", (int)x);
             dirty = true;
             break;
         case KEYCODE_U:
             // ++y;
-            y=1;
+            y = 1;
             ROS_DEBUG("Y + ,   y=%1d", (int)y);
             dirty = true;
             break;
         case KEYCODE_D:
             // --y;
-            y=-1;
+            y = -1;
             ROS_DEBUG("Y - ,   y=%1d", (int)y);
             dirty = true;
             break;
         case 'i':
         case 'I':
             // ++z_needle;
-            z_needle=1;
+            z_needle = 1;
             ROS_DEBUG("INS,    n=%1d", (int)z_needle);
             needle_dirty = true;
             break;
         case 'o':
         case 'O':
             // --z_needle;
-            z_needle=-1;
+            z_needle = -1;
             ROS_DEBUG("EXT,    n=%1d", (int)z_needle);
             needle_dirty = true;
             break;
         case 'z':
         case 'Z':
             // ++z;
-            z=1;
+            z = 1;
             ROS_DEBUG("Z + ,   z=%1d", (int)z);
             dirty = true;
             break;
         case 'x':
         case 'X':
             // --z;
-            z=-1;
+            z = -1;
             ROS_DEBUG("Z - ,   z=%1d", (int)z);
             dirty = true;
             break;
         case 'r':
         case 'R':
             // ++roll;
-            roll=1;
+            roll = 1;
             ROS_DEBUG("R + ,   r=%1d", (int)roll);
             dirty = true;
             break;
         case 'f':
         case 'F':
             // --roll;
-            roll=-1;
+            roll = -1;
             ROS_DEBUG("R - ,   r=%1d", (int)roll);
             dirty = true;
             break;
@@ -220,6 +228,14 @@ void RobotControlKey::keyLoop()
             ROS_DEBUG("W - ,   w=%1d", (int)yaw);
             dirty = true;
             break;
+        case ' ':
+            // confirmation;
+            confirmed++;
+            if (confirmed == 1)
+            {
+                ROS_INFO("Press [space] again to send current pose... ");
+            }
+            break;
         }
 
         geometry_msgs::Twist input;
@@ -232,6 +248,9 @@ void RobotControlKey::keyLoop()
 
         std_msgs::Float64 input_n;
         input_n.data = z_needle;
+
+        std_msgs::Bool confirmation;
+        confirmation.data = 1;
 
         if (dirty)
         {
@@ -246,13 +265,26 @@ void RobotControlKey::keyLoop()
             needle_dirty = false;
             returnZero();
         }
+
+        if (confirmed >= 2)
+        {
+            confirmation_pub.publish(confirmation);
+            ROS_INFO("Simulation result sent. ");
+            returnZero();
+        }
     }
 
     return;
 }
 
-void RobotControlKey::returnZero() {
-    x=0;y=0;z=0;
-    roll=0;pitch=0;yaw=0;
-    z_needle=0;
+void RobotControlKey::returnZero()
+{
+    x = 0;
+    y = 0;
+    z = 0;
+    roll = 0;
+    pitch = 0;
+    yaw = 0;
+    z_needle = 0;
+    confirmed = 0;
 }
