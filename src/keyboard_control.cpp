@@ -6,7 +6,8 @@
  * Topics Published:
  * * robot_movement
  * * needle_insertion
- * * simulation_confirmation
+ * * confirmation
+ * * reset_confirmation
  * 
  * Topics Subscribed:
  * 
@@ -45,11 +46,12 @@ private:
     // test values
     double x, y, z, roll, pitch, yaw, z_needle;
 
-    short confirmed;
+    short confirmed, reset;
 
     ros::Publisher robot_pos_pub;
     ros::Publisher needle_pub;
     ros::Publisher confirmation_pub;
+    ros::Publisher reset_pub;
 };
 
 // ctor
@@ -67,7 +69,8 @@ RobotControlKey::RobotControlKey()
 
     robot_pos_pub = nh.advertise<geometry_msgs::Twist>("robot_movement", 1);
     needle_pub = nh.advertise<std_msgs::Float64>("needle_insertion", 1);
-    confirmation_pub = nh.advertise<std_msgs::Bool>("simulation_confirmation", 1);
+    confirmation_pub = nh.advertise<std_msgs::Bool>("confirmation", 1);
+    reset_pub = nh.advertise<std_msgs::Bool>("reset_confirmation", 1);
 }
 
 int kfd = 0;
@@ -122,6 +125,8 @@ void RobotControlKey::keyLoop()
     puts("| \u03b4yaw\t|   y\t|   h\t|");
     puts("|needle\t|   i\t|   o\t|");
     puts("|-----------------------|\n");
+    puts("[SPACE] for confirmation.");
+    puts("[M] for resetting.");
 
     while (ros::ok())
     {
@@ -233,9 +238,16 @@ void RobotControlKey::keyLoop()
             confirmed++;
             if (confirmed == 1)
             {
-                ROS_INFO("Press [space] again to send current pose... ");
+                ROS_INFO("Press [SPACE] again to confirm ... ");
             }
             break;
+        case 'm':
+        case 'M':
+            reset++;
+            if (reset == 1)
+            {
+                ROS_INFO("Press [M] again to reset ... ");
+            }
         }
 
         geometry_msgs::Twist input;
@@ -251,6 +263,9 @@ void RobotControlKey::keyLoop()
 
         std_msgs::Bool confirmation;
         confirmation.data = 1;
+
+        std_msgs::Bool reset_confirmation;
+        reset_confirmation.data = 1;
 
         if (dirty)
         {
@@ -269,7 +284,14 @@ void RobotControlKey::keyLoop()
         if (confirmed >= 2)
         {
             confirmation_pub.publish(confirmation);
-            ROS_INFO("Simulation result sent. ");
+            ROS_INFO("Confirmed. ");
+            returnZero();
+        }
+
+        if (reset >= 2)
+        {
+            reset_pub.publish(reset_confirmation);
+            ROS_INFO("Reset. ");
             returnZero();
         }
     }
@@ -287,4 +309,5 @@ void RobotControlKey::returnZero()
     yaw = 0;
     z_needle = 0;
     confirmed = 0;
+    reset = 0;
 }
