@@ -63,8 +63,8 @@ class RobotState:
         self.pos = [0.0011, -0.6585, 0.2218]
         self.ori = [0.0, 0.0, 0.0]
         # keep track of current robot position, orientation and needle position
-        self.__pos = [e for e in self.pos]
-        self.__ori = [e for e in self.ori]
+        self.__pos = self.pos[:]
+        self.__ori = self.ori[:]
         self.needle_pos = 0.0
 
         # keep track of current pose in a 3x3 matrix (SO(3))
@@ -233,8 +233,8 @@ class RobotState:
         """
         if self._mode is Mode.DIRECT_TELEOP:
             rospy.loginfo("Cannot reset. You are in direct teleoperation mode. ")
-        self.pos = [e for e in self.__pos]
-        self.ori = [e for e in self.__ori]
+        self.pos = self.__pos[:]
+        self.ori = self.__ori[:]
         self._dirty = True
         self.update_vrep()
         self.send_robot_status()

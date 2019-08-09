@@ -56,7 +56,7 @@ private:
 
 // ctor
 RobotControlKey::RobotControlKey()
-    : x(0), y(0), z(0), roll(0), pitch(0), yaw(0), z_needle(0), confirmed(0)
+    : x(0), y(0), z(0), roll(0), pitch(0), yaw(0), z_needle(0), confirmed(0), reset(0)
 {
 
     nh.param("x", x, x);
