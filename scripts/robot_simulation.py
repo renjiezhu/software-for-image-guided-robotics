@@ -26,6 +26,7 @@ from std_msgs.msg import Float64, Bool
 from software_interface.msg import JointAngles
 
 import transforms3d.euler as euler
+from copy import deepcopy
 
 import signal, sys, os
 sys.path.append(f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/")
@@ -56,42 +57,6 @@ class RobotState:
         rospy.init_node("robot_control_listener_python", anonymous=True)
         rospy.loginfo("V-REP update node is initialized...")
 
-        # Two modes for controlling the robot
-        self._mode = Mode.SETUP_IK
-
-        # Saved Pose
-        self.pos = [0.0011, -0.6585, 0.2218]
-        self.ori = [0.0, 0.0, 0.0]
-        # keep track of current robot position, orientation and needle position
-        self.__pos = self.pos[:]
-        self.__ori = self.ori[:]
-        self.needle_pos = 0.0
-
-        # keep track of current pose in a 3x3 matrix (SO(3))
-        self.cur_pose = np.eye(3)
-
-        # publisher of the current robot position in a format of geometry_msgs::TRANSFORM
-        self.robot_status_pub = rospy.Publisher(
-            "robot_status_TRANSFORM", Transform, queue_size=1
-        )
-        self.robot_status = Transform()
-
-        # send pose
-        self.confirmed_pose_pub = rospy.Publisher(
-            "robot_confirmed_pose", Twist, queue_size=1
-        )
-        self.confirmed_pose = Twist()
-
-        # publisher of joint angles
-        self.joint_angles_pub = rospy.Publisher('joint_angles', JointAngles, queue_size=1)
-        self.joint_angles_msg = JointAngles()
-        self._rate = rospy.Rate(100) # 100hz
-
-        # dirty markers
-        self._dirty = False
-        self._needle_dirty = False
-        self._rotating = False
-
         # pyrep instance
         self._pr = PyRep()
         self._pr.launch(
@@ -104,6 +69,55 @@ class RobotState:
 
         # pyrep robot model instance
         self._ct_robot = CtRobot()
+        # Two modes for controlling the robot
+        self._mode = Mode.SETUP_IK
+
+        # dirty markers
+        self._dirty = False
+        self._needle_dirty = False
+        self._rotating = False
+
+        # keep track of current robot position, orientation and needle position
+        self.pos = [0.0011, -0.6585, 0.2218]
+        self.ori = [0.0, 0.0, 0.0]
+        self.needle_pos = 0.0
+        
+        # keep track of current pose in a 3x3 matrix (SO(3))
+        self.cur_pose = np.eye(3)
+
+        # Saved Pose
+        self.__pos = self.pos[:]
+        self.__ori = self.ori[:]
+        self.__cur_pose = deepcopy(self.cur_pose)
+        IK_via_vrep(self._ct_robot, self.__pos, self.__ori, self._pr, self._dt)
+        self.__joint_angles = self._ct_robot.get_joint_positions()
+
+        # keep track of current pose in a 3x3 matrix (SO(3))
+        self.cur_pose = np.eye(3)
+
+        # publisher of the current robot position in a format of geometry_msgs::TRANSFORM
+        self.robot_status_pub = rospy.Publisher(
+            "robot_status_TRANSFORM", Transform, queue_size=1
+        )
+        self.robot_status = Transform()
+
+        # send confirmed pose
+        self.confirmed_pose_pub = rospy.Publisher(
+            "robot_confirmed_pose", Twist, queue_size=1
+        )
+        self.confirmed_pose = Twist()
+
+        # send confirmed joint angles
+        self.confirmed_ja_pub = rospy.Publisher(
+            "robot_confirmed_ja", JointAngles, queue_size=1
+        )
+        self.confirmed_ja = JointAngles()
+
+        # streaming of joint angles
+        self.joint_angles_pub = rospy.Publisher('joint_angles_streaming', JointAngles, queue_size=1)
+        self.joint_angles_stream = JointAngles()
+        self._rate = rospy.Rate(100) # 100hz
+
 
     def switch_mode(self, mode: Mode):
         self._mode = mode
@@ -205,22 +219,67 @@ class RobotState:
         """
         if self._mode is Mode.SETUP_IK:
             rospy.loginfo("confirmed; mode: setup_ik")
-            # send current pose to ik node (or opti+pp)
+
             # save current pose as saved pose
+            self.__pos = self.pos[:]
+            self.__ori = self.ori[:]
+            self.__joint_angles = self._ct_robot.get_joint_positions()
+            self.__cur_pose = deepcopy(self.cur_pose)
+
+            # send current pose to ik node (or opti+pp)
+            self.confirmed_pose.linear.x = self.pos[0]
+            self.confirmed_pose.linear.y = self.pos[1]
+            self.confirmed_pose.linear.z = self.pos[2]
+            self.confirmed_pose.angular.x = self.ori[0]
+            self.confirmed_pose.angular.y = self.ori[1]
+            self.confirmed_pose.angular.z = self.ori[2]
+            self.confirmed_pose_pub.publish(self.confirmed_pose)
+
             # set mode to teleoperation? 
-            pass
+            self._mode = Mode.TELEOPERATION
+            
         elif self._mode is Mode.SETUP_PP:
             rospy.loginfo("confirmed; mode: setup_pp")
-            # send current joint configuration to pp node
-            # set mode to teleoperation?
-            pass
-        elif self._mode is Mode.TELEOPERATION:
-            rospy.loginfo("confirmed; mode: setup_to")
-            # send current pose to ik node
+
             # save current pose as saved pose
-            pass
+            self.__pos = self.pos[:]
+            self.__ori = self.ori[:]
+            self.__joint_angles = self._ct_robot.get_joint_positions()
+            self.__cur_pose = deepcopy(self.cur_pose)
+
+            # send current joint configuration to pp node
+            self.confirmed_ja.joint0 = self.__joint_angles[0]
+            self.confirmed_ja.joint1 = self.__joint_angles[1]
+            self.confirmed_ja.joint2 = self.__joint_angles[2]
+            self.confirmed_ja.joint3 = self.__joint_angles[3]
+            self.confirmed_ja.joint4 = self.__joint_angles[4]
+            self.confirmed_ja.joint5 = self.__joint_angles[5]
+            self.confirmed_ja.joint6 = self.__joint_angles[6]
+            self.confirmed_ja_pub.publish(self.confirmed_ja)
+
+            # set mode to teleoperation?
+            self._mode = Mode.TELEOPERATION
+            
+        elif self._mode is Mode.TELEOPERATION:
+            rospy.loginfo("confirmed; mode: teleop")
+
+            # save current pose as saved pose
+            self.__pos = self.pos[:]
+            self.__ori = self.ori[:]
+            self.__joint_angles = self._ct_robot.get_joint_positions()
+            self.__cur_pose = deepcopy(self.cur_pose)
+
+            # send current pose to ik node (or opti+pp)
+            self.confirmed_pose.linear.x = self.pos[0]
+            self.confirmed_pose.linear.y = self.pos[1]
+            self.confirmed_pose.linear.z = self.pos[2]
+            self.confirmed_pose.angular.x = self.ori[0]
+            self.confirmed_pose.angular.y = self.ori[1]
+            self.confirmed_pose.angular.z = self.ori[2]
+            self.confirmed_pose_pub.publish(self.confirmed_pose)
+
         elif self._mode is Mode.DIRECT_TELEOP:
-            rospy.loginfo("confirmed; mode: setup_dt")
+            rospy.loginfo("confirmed; mode: direct_tele")
             # fail this confirmation
             pass
         else:
@@ -235,8 +294,11 @@ class RobotState:
             rospy.loginfo("Cannot reset. You are in direct teleoperation mode. ")
         self.pos = self.__pos[:]
         self.ori = self.__ori[:]
+        self.cur_pose = deepcopy(self.__cur_pose)
         self._dirty = True
         self.update_vrep()
+        # self._ct_robot.set_joint_positions(self.__joint_angles)
+        # self._pr.step()
         self.send_robot_status()
 
     def update_vrep(self):
@@ -299,7 +361,7 @@ class RobotState:
             self.joint_angles_msg.joint5.data = joint_angles_vrep[5]
             self.joint_angles_msg.joint6.data = joint_angles_vrep[6]
             
-            self.joint_angles_pub.publish(self.joint_angles_msg)
+            self.joint_angles_pub.publish(self.joint_angles_stream)
             self._rate.sleep()
 
     def update_state(self):
