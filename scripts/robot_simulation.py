@@ -22,7 +22,7 @@ import rospy
 import numpy as np
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Transform
-from std_msgs.msg import Float64
+from std_msgs.msg import Float64, Bool
 from software_interface.msg import JointAngles
 
 import transforms3d.euler as euler
@@ -60,11 +60,11 @@ class RobotState:
         self._mode = Mode.SETUP_IK
 
         # Saved Pose
-        self.__pos = [0.0011, -0.6585, 0.2218]
-        self.__ori = [0.0, 0.0, 0.0]
+        self.pos = [0.0011, -0.6585, 0.2218]
+        self.ori = [0.0, 0.0, 0.0]
         # keep track of current robot position, orientation and needle position
-        self.pos = self.__pos
-        self.ori = self.__ori
+        self.__pos = [e for e in self.pos]
+        self.__ori = [e for e in self.ori]
         self.needle_pos = 0.0
 
         # keep track of current pose in a 3x3 matrix (SO(3))
@@ -112,9 +112,9 @@ class RobotState:
         """
         shutdown vrep safely
         """
-        self.pr.stop()
+        self._pr.stop()
         rospy.loginfo("V-REP shutting down.")
-        self.pr.shutdown()
+        self._pr.shutdown()
 
     def signal_handler(self, sig, frame):
         """
@@ -151,30 +151,30 @@ class RobotState:
                 theta = np.radians(-data.angular.y)
                 c, s = np.cos(theta), np.sin(theta)
                 rot_mat = np.array([[1, 0, 0], [0, c, -s], [0, s, c]])
-                self.rotating = True
+                self._rotating = True
             elif data.angular.x != 0:
                 theta = np.radians(data.angular.x)
                 c, s = np.cos(theta), np.sin(theta)
                 rot_mat = np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
-                self.rotating = True
+                self._rotating = True
             elif data.angular.z != 0:
                 theta = np.radians(data.angular.z)
                 c, s = np.cos(theta), np.sin(theta)
                 rot_mat = np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
-                self.rotating = True
+                self._rotating = True
             else:
-                self.rotating = False
+                self._rotating = False
 
             # step two: if rotated, find the world frame euler angles
-            if self.rotating:
+            if self._rotating:
                 self.cur_pose = rot_mat @ self.cur_pose
                 # get euler angles for vrep wrt world frame (rxyz)
-                self.ori = euler.mat2euler(self.cur_pose, "rxyz")
+                self.ori = list(euler.mat2euler(self.cur_pose, "rxyz"))
 
-            self.dirty = True
+            self._dirty = True
 
-            rospy.logdebug(self.pos)
-            rospy.logdebug(self.ori)
+            rospy.loginfo(self.pos)
+            rospy.loginfo(self.ori)
 
             self.update_vrep()
 
@@ -194,7 +194,7 @@ class RobotState:
             rospy.logwarn("Needle fully retracted.")
         else:
             self.needle_pos += data.data
-            self.needle_dirty = True
+            self._needle_dirty = True
             rospy.loginfo(self.needle_pos)
 
             self.update_vrep()
@@ -204,19 +204,23 @@ class RobotState:
         send simulation confirmation
         """
         if self._mode is Mode.SETUP_IK:
+            rospy.loginfo("confirmed; mode: setup_ik")
             # send current pose to ik node (or opti+pp)
             # save current pose as saved pose
             # set mode to teleoperation? 
             pass
         elif self._mode is Mode.SETUP_PP:
+            rospy.loginfo("confirmed; mode: setup_pp")
             # send current joint configuration to pp node
             # set mode to teleoperation?
             pass
         elif self._mode is Mode.TELEOPERATION:
+            rospy.loginfo("confirmed; mode: setup_to")
             # send current pose to ik node
             # save current pose as saved pose
             pass
         elif self._mode is Mode.DIRECT_TELEOP:
+            rospy.loginfo("confirmed; mode: setup_dt")
             # fail this confirmation
             pass
         else:
@@ -229,8 +233,9 @@ class RobotState:
         """
         if self._mode is Mode.DIRECT_TELEOP:
             rospy.loginfo("Cannot reset. You are in direct teleoperation mode. ")
-        self.pos == self.__pos
-        self.ori == self.__ori
+        self.pos = [e for e in self.__pos]
+        self.ori = [e for e in self.__ori]
+        self._dirty = True
         self.update_vrep()
         self.send_robot_status()
 
@@ -279,7 +284,6 @@ class RobotState:
         # self.robot_status.angular.y = self.ori[1]
         # self.robot_status.angular.z = self.ori[2]
         
-        
         self.robot_status_pub.publish(self.robot_status)
 
     def send_joint_angles(self):
@@ -305,14 +309,17 @@ class RobotState:
         Core method to be called in __main__; access point to
         callbacks. Held by rospy.spin() until ctrl+C.
         """
+
         rospy.Subscriber("needle_insertion", Float64, self.needle_pos_callback)
         rospy.Subscriber("robot_movement", Twist, self.robot_pos_callback)
         rospy.Subscriber("confirmation", Bool, self.confirmation_callback)
         rospy.Subscriber("reset_confirmation", Bool, self.reset_callback)
         
         signal.signal(signal.SIGINT, self.signal_handler)
-        if self._mode is Mode.DIRECT_TELEOP:
-            self.send_joint_angles()
+
+        # if self._mode is Mode.DIRECT_TELEOP:
+        #     self.send_joint_angles()
+
         rospy.spin()
 
 
