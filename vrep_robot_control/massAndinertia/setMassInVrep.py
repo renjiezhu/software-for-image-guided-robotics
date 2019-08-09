@@ -42,7 +42,6 @@ def getMassfromSW(file_name):
     inertia[2,0] = tmp[1,0]
     inertia[2,1] = -tmp[1,2]
     inertia[2,2] = tmp[1,1]
-
     return mass, inertia, centr_of_mass
 
 

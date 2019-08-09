@@ -268,23 +268,22 @@ class dh_robot_config:
 
     def Mq(self, q, x=[0, 0, 0]):
         M = np.zeros((self.num_joints, self.num_joints))
-        q.extend(x)
+        param = tuple(q) + tuple(x)
         for ii in range(self.num_links):            
-            M += self._Mq[ii](*tuple(q))
+            M += self._Mq[ii](*param)
         return M
 
     def Gq(self, q, x=[0, 0, 0]):
         G = np.zeros((self.num_joints,1))
-        q.extend(x)
-
+        param = tuple(q) + tuple(x)
         for ii in range(self.num_joints):            
-            G += self._Gq[ii](*tuple(q))
+            G += self._Gq[ii](*param)
         return G
 
 
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':      
     param = ['D', 'a', 'alpha', 'theta', 'num_joints', 'jointType', 'Tbase', 'L', 'M']
     config = dict()
     for i in range(len(param)):
