@@ -2,12 +2,12 @@
 """
  * Software Interface for Image Guided Robotics
  * 
- * Listerner 
+ * robot_simulation
  * 
  * Topics Published:
  * * robot_status_TRANSFORM (geometry_msgs/Transform)
- * * robot_status_TWIST (geometry_msgs/Twist)
- * * joint_angles
+ * * robot_status_TWIST (geometry_msgs/Twist) (deprecated)
+ * * joint_angles (software_interface/JointAngles)
  *
  * Topics Subscribed:
  * * robot_movement (geometry_msgs/Twist)
@@ -30,14 +30,12 @@ import transforms3d.euler as euler
 import signal
 import sys
 
-import time
-
 # sys.path.append(".")
 # sys.path.append("./src/software_interface")
 # import os
 # print(f"current working directory: {os.getcwd()}")
-# sys.path.append("/home/renjie/Documents/igr/src/software_interface/")
-sys.path.append("/home/guosong/Documents/igr/src/software_interface/")
+sys.path.append("/home/renjie/Documents/igr/src/software_interface/")
+# sys.path.append("/home/guosong/Documents/igr/src/software_interface/")
 from pyrep import PyRep
 from vrep_robot_control.ct_robot_control import IK_via_vrep
 from vrep_robot_control.arm import CtRobot
@@ -53,7 +51,7 @@ class RobotState:
 
     def __init__(self):
 
-        rospy.init_node("robot_control_listener_python", anonymous=True)
+        rospy.init_node("robot_simulation", anonymous=True)
         rospy.loginfo("V-REP update node is initialized...")
 
         # keep track of current robot position, orientation and needle position
@@ -66,11 +64,11 @@ class RobotState:
 
         # publisher of the current robot position in a format of geometry_msgs::Twist
         self.robot_status_pub = rospy.Publisher(
-            # "robot_status_TRANSFORM", Transform, queue_size=1
-            "robot_status_TWIST", Twist, queue_size=1,
+            "robot_status_TRANSFORM", Transform, queue_size=1
+            # "robot_status_TWIST", Twist, queue_size=1,
         )
-        # self.robot_status = Transform()
-        self.robot_status = Twist()
+        self.robot_status = Transform()
+        # self.robot_status = Twist()
 
         # publisher of joint angles
         self.joint_angles_pub = rospy.Publisher('joint_angles', JointAngles, queue_size=1)
@@ -86,7 +84,7 @@ class RobotState:
         self.pr = PyRep()
 
         self.pr.launch(
-            "/home/guosong/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt",
+            "/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt",
             headless=False,
         )
 
@@ -227,21 +225,27 @@ class RobotState:
         """
 
         # unit base in 3d slicer 'mm' , convert by multipling 1000
-        self.robot_status.linear.x = self.pos[0] * 1000
-        self.robot_status.linear.y = self.pos[1] * 1000
-        self.robot_status.linear.z = self.pos[2] * 1000
+        self.robot_status.translation.x = self.pos[0] * 1000
+        self.robot_status.translation.y = self.pos[1] * 1000
+        self.robot_status.translation.z = self.pos[2] * 1000
 
         # find the quaternion for the current orientation 
         # parameter 'axes' corrects for frame differences
-        # quat = euler.euler2quat(self.ori[0], self.ori[1], self.ori[2], axes="sxyz")
-        # self.robot_status.rotation.w = quat[0]
-        # self.robot_status.rotation.x = quat[1]
-        # self.robot_status.rotation.y = quat[2]
-        # self.robot_status.rotation.z = quat[3]
+        quat = euler.euler2quat(self.ori[0], self.ori[1], self.ori[2], axes="sxyz")
+        self.robot_status.rotation.w = quat[0]
+        self.robot_status.rotation.x = quat[1]
+        self.robot_status.rotation.y = quat[2]
+        self.robot_status.rotation.z = quat[3]
 
-        self.robot_status.angular.x = self.ori[0]
-        self.robot_status.angular.y = self.ori[1]
-        self.robot_status.angular.z = self.ori[2]
+        # for sending twist
+
+        # self.robot_status.linear.x = self.pos[0] * 1000
+        # self.robot_status.linear.y = self.pos[1] * 1000
+        # self.robot_status.linear.z = self.pos[2] * 1000
+
+        # self.robot_status.angular.x = self.ori[0]
+        # self.robot_status.angular.y = self.ori[1]
+        # self.robot_status.angular.z = self.ori[2]
         
         
         self.robot_status_pub.publish(self.robot_status)
@@ -249,9 +253,9 @@ class RobotState:
     def send_joint_angles(self):
 
         while not rospy.is_shutdown():
-            ts = time.time()
+
             joint_angles_vrep = self.ct_robot.get_joint_positions()
-            print((time.time()-ts))
+
             self.joint_angles_msg.joint0.data = joint_angles_vrep[0]
             self.joint_angles_msg.joint1.data = joint_angles_vrep[1]
             self.joint_angles_msg.joint2.data = joint_angles_vrep[2]

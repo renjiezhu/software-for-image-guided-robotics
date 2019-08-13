@@ -59,7 +59,7 @@ class RobotMotors:
         setpoint_arm[5] = input_data.joint5.data
         setpoint_arm[6] = input_data.joint6.data
 
-        print("joint angles", setpoint_arm.tolist())
+        # print("joint angles", setpoint_arm.tolist())
 
         self.myArm.commandJoints(self.motors, setpoint_arm, trajectory=False)
 
