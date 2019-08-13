@@ -236,7 +236,7 @@ class RobotState:
             self.confirmed_pose_pub.publish(self.confirmed_pose)
 
             # set mode to teleoperation? 
-            self._mode = Mode.TELEOPERATION
+            self.switch_mode(Mode.TELEOPERATION)
             
         elif self._mode is Mode.SETUP_PP:
             rospy.loginfo("confirmed; mode: setup_pp")
@@ -258,7 +258,7 @@ class RobotState:
             self.confirmed_ja_pub.publish(self.confirmed_ja)
 
             # set mode to teleoperation?
-            self._mode = Mode.TELEOPERATION
+            self.switch_mode(Mode.TELEOPERATION)
             
         elif self._mode is Mode.TELEOPERATION:
             rospy.loginfo("confirmed; mode: teleop")
