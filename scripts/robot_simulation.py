@@ -82,16 +82,20 @@ class RobotState:
 
         # pyrep instance
         self.pr = PyRep()
+
         self.pr.launch(
             "/home/renjie/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt",
             headless=False,
         )
+
         self.dt = 0.01
         self.pr.set_simulation_timestep(self.dt)
         self.pr.start()
 
         # pyrep robot model instance
         self.ct_robot = CtRobot()
+        self.default_pos = self.ct_robot.get_joint_positions()
+
 
     def shutdown_vrep(self):
         """

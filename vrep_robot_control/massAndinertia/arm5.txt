@@ -1,0 +1,32 @@
+Mass properties of selected components
+     Coordinate system: Coordinate System1
+
+The center of mass and the moments of inertia are output in the coordinate system of ct_robot_assembly
+Mass = 23.75 grams
+
+Volume = 22587.12 cubic millimeters
+
+Surface area = 20892.48  square millimeters
+
+Center of mass: ( millimeters )
+	X = 0.12
+	Y = 201.49
+	Z = 646.41
+
+Principal axes of inertia and principal moments of inertia: ( grams *  square millimeters )
+Taken at the center of mass.
+	 Ix = ( 0.01,  0.00, -1.00)   	Px = 2815.07
+	 Iy = (-1.00, -0.03, -0.01)   	Py = 15869.35
+	 Iz = (-0.03,  1.00,  0.00)   	Pz = 17079.76
+
+Moments of inertia: ( grams *  square millimeters )
+Taken at the center of mass and aligned with the output coordinate system.
+	Lxx = 15869.29	Lxy = 33.78	Lxz = -114.38
+	Lyx = 33.78	Lyy = 17078.81	Lyz = -3.21
+	Lzx = -114.38	Lzy = -3.21	Lzz = 2816.07
+
+Moments of inertia: ( grams *  square millimeters )
+Taken at the output coordinate system.
+	Ixx = 10904161.25	Ixy = 614.07	Ixz = 1747.27
+	Iyx = 614.07	Iyy = 9941134.95	Iyz = 3093398.42
+	Izx = 1747.27	Izy = 3093398.42	Izz = 967052.60

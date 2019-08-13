@@ -1,0 +1,33 @@
+Mass properties of teststand_TR2^ct_robot_assembly
+     Configuration: Default
+     Coordinate system: Coordinate System1
+
+The center of mass and the moments of inertia are output in the coordinate system of ct_robot_assembly
+Mass = 1196.50 grams
+
+Volume = 858345.94 cubic millimeters
+
+Surface area = 413911.43  square millimeters
+
+Center of mass: ( millimeters )
+	X = 4.39
+	Y = 95.46
+	Z = 26.55
+
+Principal axes of inertia and principal moments of inertia: ( grams *  square millimeters )
+Taken at the center of mass.
+	 Ix = ( 0.05, -0.04, -1.00)   	Px = 3300297.02
+	 Iy = (-0.03, -1.00,  0.04)   	Py = 16401546.41
+	 Iz = (-1.00,  0.03, -0.05)   	Pz = 17095790.08
+
+Moments of inertia: ( grams *  square millimeters )
+Taken at the center of mass and aligned with the output coordinate system.
+	Lxx = 17065873.33	Lxy = -3108.57	Lxz = -633972.00
+	Lyx = -3108.57	Lyy = 16380250.29	Lyz = 536475.67
+	Lzx = -633972.00	Lzy = 536475.67	Lzz = 3351509.88
+
+Moments of inertia: ( grams *  square millimeters )
+Taken at the output coordinate system.
+	Ixx = 28812948.54	Ixy = 497786.46	Ixz = -494648.32
+	Iyx = 497786.46	Iyy = 17246833.44	Iyz = 3569278.96
+	Izx = -494648.32	Izy = 3569278.96	Izz = 14278023.09
