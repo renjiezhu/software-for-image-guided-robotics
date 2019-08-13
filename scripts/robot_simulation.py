@@ -29,6 +29,7 @@ import transforms3d.euler as euler
 from copy import deepcopy
 
 import signal, sys, os
+
 sys.path.append(f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/")
 
 from pyrep import PyRep
@@ -36,6 +37,7 @@ from vrep_robot_control.ct_robot_control import IK_via_vrep
 from vrep_robot_control.arm import CtRobot
 
 from enum import Enum
+
 
 class Mode(Enum):
     SETUP_IK = 1
@@ -81,7 +83,7 @@ class RobotState:
         self.pos = [0.0011, -0.6585, 0.2218]
         self.ori = [0.0, 0.0, 0.0]
         self.needle_pos = 0.0
-        
+
         # keep track of current pose in a 3x3 matrix (SO(3))
         self.cur_pose = np.eye(3)
 
@@ -114,10 +116,11 @@ class RobotState:
         self.confirmed_ja = JointAngles()
 
         # streaming of joint angles
-        self.joint_angles_pub = rospy.Publisher('joint_angles_streaming', JointAngles, queue_size=1)
+        self.joint_angles_pub = rospy.Publisher(
+            "joint_angles_streaming", JointAngles, queue_size=1
+        )
         self.joint_angles_stream = JointAngles()
-        self._rate = rospy.Rate(100) # 100hz
-
+        self._rate = rospy.Rate(100)  # 100hz
 
     def switch_mode(self, mode: Mode):
         self._mode = mode
@@ -216,6 +219,8 @@ class RobotState:
     def confirmation_callback(self, data):
         """
         send simulation confirmation
+
+        adjust mode accordingly
         """
         if self._mode is Mode.SETUP_IK:
             rospy.loginfo("confirmed; mode: setup_ik")
@@ -235,9 +240,9 @@ class RobotState:
             self.confirmed_pose.angular.z = self.ori[2]
             self.confirmed_pose_pub.publish(self.confirmed_pose)
 
-            # set mode to teleoperation? 
+            # set mode to teleoperation?
             self.switch_mode(Mode.TELEOPERATION)
-            
+
         elif self._mode is Mode.SETUP_PP:
             rospy.loginfo("confirmed; mode: setup_pp")
 
@@ -259,7 +264,7 @@ class RobotState:
 
             # set mode to teleoperation?
             self.switch_mode(Mode.TELEOPERATION)
-            
+
         elif self._mode is Mode.TELEOPERATION:
             rospy.loginfo("confirmed; mode: teleop")
 
@@ -328,7 +333,7 @@ class RobotState:
         self.robot_status.translation.y = self.pos[1] * 1000
         self.robot_status.translation.z = self.pos[2] * 1000
 
-        # find the quaternion for the current orientation 
+        # find the quaternion for the current orientation
         # parameter 'axes' corrects for frame differences
         quat = euler.euler2quat(self.ori[0], self.ori[1], self.ori[2], axes="sxyz")
         self.robot_status.rotation.w = quat[0]
@@ -345,10 +350,15 @@ class RobotState:
         # self.robot_status.angular.x = self.ori[0]
         # self.robot_status.angular.y = self.ori[1]
         # self.robot_status.angular.z = self.ori[2]
-        
+
         self.robot_status_pub.publish(self.robot_status)
 
     def send_joint_angles(self):
+        """
+        Streaming joint angles at required rate "self._rate".
+        Normally for direct teleoperation mode
+        """
+
         while not rospy.is_shutdown():
 
             joint_angles_vrep = self._ct_robot.get_joint_positions()
@@ -360,7 +370,7 @@ class RobotState:
             self.joint_angles_msg.joint4.data = joint_angles_vrep[4]
             self.joint_angles_msg.joint5.data = joint_angles_vrep[5]
             self.joint_angles_msg.joint6.data = joint_angles_vrep[6]
-            
+
             self.joint_angles_pub.publish(self.joint_angles_stream)
             self._rate.sleep()
 
@@ -370,13 +380,16 @@ class RobotState:
         
         Core method to be called in __main__; access point to
         callbacks. Held by rospy.spin() until ctrl+C.
+
+        If in DIRECT_TELEOP mode, it should be responsible for 
+        streaming joint angles.
         """
 
         rospy.Subscriber("needle_insertion", Float64, self.needle_pos_callback)
         rospy.Subscriber("robot_movement", Twist, self.robot_pos_callback)
         rospy.Subscriber("confirmation", Bool, self.confirmation_callback)
         rospy.Subscriber("reset_confirmation", Bool, self.reset_callback)
-        
+
         signal.signal(signal.SIGINT, self.signal_handler)
 
         # if self._mode is Mode.DIRECT_TELEOP:
@@ -389,6 +402,4 @@ if __name__ == "__main__":
 
     robot = RobotState()
     robot.update_state()
-
-
 
