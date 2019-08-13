@@ -8,7 +8,7 @@ import cloudpickle
 
 
 pi = np.pi
-
+head_path = f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/vrep_robot_control"
 
 class dh_robot_config:
     ''' provides a robot class for forward and inverse kinematics, jacobian calculation based 
@@ -205,13 +205,13 @@ class dh_robot_config:
         return J
     
     def _calc_J(self, T, i, T_type, lambdify=True):
-        if os.path.isfile('./%s/J/J_%s%d' % (self.config_folder, T_type, i)):
-            J = cloudpickle.load(open('./%s/J/J_%s%d' % (self.config_folder, T_type, i), 'rb'))
+        if os.path.isfile(head_path+'/%s/J/J_%s%d' % (self.config_folder, T_type, i)):
+            J = cloudpickle.load(open(head_path+'/%s/J/J_%s%d' % (self.config_folder, T_type, i), 'rb'))
         else:
             x = self._calc_J_position(T, lambdify=False)
             y = self._calc_J_orientation(T, i, lambdify=False)
             J = x.col_join(y)
-            cloudpickle.dump(J, open('./%s/J/J_%s%d' % (self.config_folder, T_type, i), 'wb'))
+            cloudpickle.dump(J, open(head_path+'/%s/J/J_%s%d' % (self.config_folder, T_type, i), 'wb'))
         if lambdify:
             return sp.lambdify(self.q + self.x, J)
         return J
@@ -232,13 +232,13 @@ class dh_robot_config:
         """
         for ii in range(self.num_links):
             # check to see if we have our inertia matrix saved in file
-            if os.path.isfile('./%s/M/Mq_%d' % (self.config_folder, ii)):
-                M = cloudpickle.load(open('./%s/M/Mq_%d' % (self.config_folder, ii), 'rb'))
+            if os.path.isfile(head_path+'/%s/M/Mq_%d' % (self.config_folder, ii)):
+                M = cloudpickle.load(open(head_path+'/%s/M/Mq_%d' % (self.config_folder, ii), 'rb'))
             else:
                 # transform each inertia matrix into joint space
                 M = self._J_linklambda[ii].T * self._M[ii] * self._J_linklambda[ii]
                 # save to file
-                cloudpickle.dump(M, open('./%s/M/Mq' % self.config_folder, 'wb'))
+                cloudpickle.dump(M, open(head_path+'/%s/M/Mq' % self.config_folder, 'wb'))
             if lambdify is False:
                 self._Mqlambda.append(M)
             else:
@@ -253,13 +253,13 @@ class dh_robot_config:
         """
         for ii in range(self.num_joints):
             # check to see if we have our gravity term saved in file
-            if os.path.isfile('./%s/G/Gq_%d' % (self.config_folder, ii)):
-                G = cloudpickle.load(open('./%s/G/Gq_%d' % (self.config_folder, ii), 'rb'))
+            if os.path.isfile(head_path+'/%s/G/Gq_%d' % (self.config_folder, ii)):
+                G = cloudpickle.load(open(head_path+'/%s/G/Gq_%d' % (self.config_folder, ii), 'rb'))
             else:
                 # transform each inertia matrix into joint space
                 G = self._J_linklambda[ii].T * self._M[ii] * self.gravity
                 # save to file
-                cloudpickle.dump(G, open('./%s/G/Gq_%d' % (self.config_folder, ii), 'wb'))
+                cloudpickle.dump(G, open(head_path+'/%s/G/Gq_%d' % (self.config_folder, ii), 'wb'))
             if lambdify is False:
                 self._Gqlambda.append(G)
             else:
