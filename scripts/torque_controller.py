@@ -49,7 +49,7 @@ class TorqueController:
         # self.robot.initKinematicTransforms()
 
         # publisher
-        self.torque_pub = rospy.Publisher("torque", Torque, queue_size=1)
+        self.torque_pub = rospy.Publisher("torque_tau_controller", Torque, queue_size=1)
         self.torque_msg = Torque()
 
         # measured positions
@@ -93,8 +93,8 @@ class TorqueController:
 
 
     def Controller(self):
-        rospy.Subscriber("measured", JointAngles, self.measured_callback)
-        rospy.Subscriber("target", JointAngles, self.target_callback)
+        rospy.Subscriber("measured_joint_angles", JointAngles, self.measured_callback)
+        rospy.Subscriber("target_joint_angles", JointAngles, self.target_callback)
         
         self.publish_func()
         rospy.spin()

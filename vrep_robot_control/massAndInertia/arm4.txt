@@ -1,0 +1,35 @@
+Mass properties of new_insertionaxis_slider1
+     Configuration: Default
+     Coordinate system: Coordinate System1
+
+The center of mass and the moments of inertia are output in the coordinate system of assembled_4dof_arm_2modified
+Density = 0.00 grams per cubic millimeter
+
+Mass = 6.63 grams
+
+Volume = 6625.77 cubic millimeters
+
+Surface area = 4259.04  square millimeters
+
+Center of mass: ( millimeters )
+	X = 789.19
+	Y = -24.12
+	Z = -0.40
+
+Principal axes of inertia and principal moments of inertia: ( grams *  square millimeters )
+Taken at the center of mass.
+	 Ix = ( 0.71,  0.70, -0.09)   	Px = 419.22
+	 Iy = (-0.07, -0.06, -1.00)   	Py = 523.66
+	 Iz = (-0.70,  0.71,  0.00)   	Pz = 540.95
+
+Moments of inertia: ( grams *  square millimeters )
+Taken at the center of mass and aligned with the output coordinate system.
+	Lxx = 479.19	Lxy = 60.41	Lxz = -6.78
+	Lyx = 60.41	Lyy = 481.85	Lyz = -6.64
+	Lzx = -6.78	Lzy = -6.64	Lzz = 522.79
+
+Moments of inertia: ( grams *  square millimeters )
+Taken at the output coordinate system.
+	Ixx = 4333.47	Ixy = -126037.56	Ixz = -2110.27
+	Iyx = -126037.56	Iyy = 4127100.45	Iyz = 57.64
+	Izx = -2110.27	Izy = 57.64	Izz = 4130993.52
