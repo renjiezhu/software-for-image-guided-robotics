@@ -1,0 +1,8 @@
+<launch>
+
+  <node name="robot_simulation" pkg="software_interface" type="robot_simulation.py" />
+
+  <node name="keyboard_input" pkg="software_interface" type="keyboard_control" output="screen"/>
+
+  <node name="rosbag_all" pkg="rosbag" type="record" args="record -a" />
+</launch>
