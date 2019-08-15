@@ -10,24 +10,26 @@
  * Topics Subscribed:
  * * joint angles (software_interface/JointAngles)
  * 
- * By Renjie Zhu (rezhu@eng.ucsd.edu), Guosong Li ()
+ * By Renjie Zhu (rezhu@eng.ucsd.edu), Guosong Li (g4li@ucsd.edu)
  * 
  * August 7th, 2019
  * 
 """
 
 import rospy
-
+import numpy as np
 import sys, os
 sys.path.append(f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/")
 
-from software_interface.msg import Torque
-from software_interface.msg import JointAngles
+from sensor_msgs.msg import JointState
 from vrep_robot_control.JS_control import *
 from vrep_robot_control.DH_dynamics import dh_robot_config
 from vrep_robot_control.arm import CtRobot
 import sympy as sp
 
+
+
+num_joints = 4
 
 
 class TorqueController:
@@ -41,61 +43,59 @@ class TorqueController:
         param = ['D', 'a', 'alpha', 'theta', 'num_joints', 'jointType', 'Tbase', 'L', 'M']
         config = dict()
         for i in range(len(param)):
-            config[param[i]] = np.load(f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/vrep_robot_control/robot_config/config_ct_7DOF/{param[i]}.npy")
+            config[param[i]] = np.load(f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/vrep_robot_control/robot_config/inbore_config/{param[i]}.npy")
 
         # Initialization 
         self.robot = dh_robot_config(int(config['num_joints']), config['alpha'], config['theta'], config['D'], config['a'], 
                                                 config['jointType'], config['Tbase'], config['L'], config['M'])
-        # self.robot.initKinematicTransforms()
+        self.robot.initKinematicTransforms()
 
         # publisher
-        self.torque_pub = rospy.Publisher("torque_tau_controller", Torque, queue_size=1)
-        self.torque_msg = Torque()
+        self.torque_pub = rospy.Publisher("vrep_ros_interface/torque_calculated", JointState, queue_size=1)
+        self.torque_msg = JointState()
 
-        # measured positions
-        self.pos_target = None
-        # target positions
-        self.pos_measured = None
+        # measurement
+        self.pos_target = [0,0,0,0]
+        self.vel_target = [0,0,0,0]
+
+        # target
+        self.pos_measured = [0,0,0,0]
+        self.vel_measured = [0,0,0,0]
 
         # rate
         self._rate = rospy.Rate(500) # 500Hz
 
+        # robot arm offset
+        self.xyz = [0, 0, 0.35]
+
     
     def measured_callback(self, data):
-        dpos = [data.joint0.data, data.joint1.data, data.joint2.data, data.joint3.data, data.joint4.data, data.joint5.data,
-                                data.joint6.data, data.joint7.data]
-        self.pos_target = dpos
-
+        self.pos_measured = list(data.position)
+        self.vel_measured = list(data.velocity)
 
     def target_callback(self, data):
-        mpos = [data.joint0.data, data.joint1.data, data.joint2.data, data.joint3.data, data.joint4.data, data.joint5.data,
-                                data.joint6.data, data.joint7.data]
-        self.pos_measured = mpos
+        self.pos_target = list(data.position)
+        self.vel_target = list(data.velocity)
 
     def cacl_tau(self):
-        return [0,0,0,0,0,0,0,0]
+        kp = np.diag([2.5, 1, 0.4, 0.4])
+        kv = np.diag([10, 7, 2, 3])
+        tau = cacl_tau_GravityCompensation(self.robot, kp, kv, self.pos_target, self.pos_measured,
+             self.vel_target, self.vel_measured, self.xyz)
+        return tau
 
     
     def publish_func(self):
         while not rospy.is_shutdown():
             tau = self.cacl_tau()
-            self.torque_msg.joint0.data = tau[0]
-            self.torque_msg.joint1.data = tau[1]
-            self.torque_msg.joint2.data = tau[2]
-            self.torque_msg.joint3.data = tau[3]
-            self.torque_msg.joint4.data = tau[4]
-            self.torque_msg.joint5.data = tau[5]
-            self.torque_msg.joint6.data = tau[6]
-            self.torque_msg.joint7.data = tau[7]
-
+            self.torque_msg.position = tau.tolist()
             self.torque_pub.publish(self.torque_msg)
             self._rate.sleep()
 
 
     def Controller(self):
-        rospy.Subscriber("measured_joint_angles", JointAngles, self.measured_callback)
-        rospy.Subscriber("target_joint_angles", JointAngles, self.target_callback)
-        
+        rospy.Subscriber("vrep_ros_interface/measured_joint_angles", JointState, self.measured_callback)
+        rospy.Subscriber("target_joint_angles", JointState, self.target_callback)
         self.publish_func()
         rospy.spin()
     
