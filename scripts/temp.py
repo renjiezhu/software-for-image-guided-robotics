@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 import rospy
 from sensor_msgs.msg import JointState
-import sys, os
-sys.path.append(f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/")
+
 
 def callback(input_msg):
     

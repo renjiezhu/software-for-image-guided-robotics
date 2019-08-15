@@ -49,8 +49,8 @@ class ControllerTester:
 
         # Set up simulation parameter
         self.dt = 0.01
-        self.pr.set_simulation_timestep(self.dt)
         self.pr.start()
+        self.pr.set_simulation_timestep(self.dt)
 
         # Set up dynamics properties of arm
         for j in range(1, self.inbore._num_joints + 1):
@@ -62,6 +62,8 @@ class ControllerTester:
             self.inbore.joints[i].set_joint_mode(JointMode.FORCE)
             self.inbore.joints[i].set_control_loop_enabled(False)
             self.inbore.joints[i].set_motor_locked_at_zero_velocity(True)
+            self.inbore.joints[i].set_joint_position(0)
+            self.inbore.joints[i].set_joint_target_velocity(0)
         self.pr.step()
     
         # Generate trajectory
@@ -91,8 +93,8 @@ class ControllerTester:
         """
         shutdown vrep safely
         """
-        # rospy.loginfo("Stopping pyrep.")
-        # self.pr.stop()
+        rospy.loginfo("Stopping pyrep.")
+        self.pr.stop()
         rospy.loginfo("V-REP shutting down.")
         self.pr.shutdown()
 
@@ -105,12 +107,16 @@ class ControllerTester:
             target = JointState()
             target.position = posd
             target.velocity = veld
-            signal.signal(signal.SIGINT, self.signal_handler)
             t = t + self.dt
+            signal.signal(signal.SIGINT, self.signal_handler)
             self.target_pub.publish(target)
             self.pr.step()
 
 
+
 if __name__ == "__main__":
     ct = ControllerTester()
-    ct.publish()
+    try:
+        ct.publish()
+    except:
+        pass

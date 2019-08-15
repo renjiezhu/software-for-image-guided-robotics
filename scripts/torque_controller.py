@@ -66,7 +66,7 @@ class TorqueController:
         self._rate = rospy.Rate(500) # 500Hz
 
         # robot arm offset
-        self.xyz = [0, 0, 0.35]
+        self.xyz = [0, 0, 0]
 
     
     def measured_callback(self, data):
@@ -78,8 +78,9 @@ class TorqueController:
         self.vel_target = list(data.velocity)
 
     def cacl_tau(self):
-        kp = np.diag([2.5, 1, 0.4, 0.4])
-        kv = np.diag([10, 7, 2, 3])
+        kp = np.diag([0.1, 0.04, 0.04, 0.03])
+        # kv = np.diag([3, 2, 2.5, 3])
+        kv = 2*np.sqrt(kp)
         tau = cacl_tau_GravityCompensation(self.robot, kp, kv, self.pos_target, self.pos_measured,
              self.vel_target, self.vel_measured, self.xyz)
         return tau
@@ -88,6 +89,7 @@ class TorqueController:
     def publish_func(self):
         while not rospy.is_shutdown():
             tau = self.cacl_tau()
+            print(tau)
             self.torque_msg.position = tau.tolist()
             self.torque_pub.publish(self.torque_msg)
             self._rate.sleep()
