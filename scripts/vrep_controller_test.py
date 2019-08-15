@@ -10,7 +10,7 @@
  * Topics Subscribed:
  * * joint angles (software_interface/JointAngles)
  * 
- * By Renjie Zhu (rezhu@eng.ucsd.edu), Guosong Li (g4li@ucsd.edu)
+ * By Guosong Li (g4li@ucsd.edu), Renjie Zhu (rezhu@eng.ucsd.edu)
  * 
  * August 14th, 2019
  * 
