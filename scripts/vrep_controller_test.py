@@ -1,9 +1,24 @@
 #!/usr/bin/env python3
+"""
+ * Software Interface for Image Guided Robotics
+ * 
+ * V-REP based controller
+ * 
+ * Topics Published:
+ * * joint torque (software_interface/Torque)
+ *
+ * Topics Subscribed:
+ * * joint angles (software_interface/JointAngles)
+ * 
+ * By Renjie Zhu (rezhu@eng.ucsd.edu), Guosong Li (g4li@ucsd.edu)
+ * 
+ * August 14th, 2019
+ * 
+"""
 import rospy
 from sensor_msgs.msg import JointState
 
-import signal
-import sys, os
+import signal, sys, os
 sys.path.append(f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/")
 
 from pyrep import PyRep
