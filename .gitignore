@@ -53,6 +53,9 @@ CATKIN_IGNORE
 # vscode
 .vscode
 
+#
+*.bag
+
 # jupyter notebook
 vrep_robot_control/.ipynb_checkpoints
 vrep_robot_control/*/.ipynb_checkpoints
