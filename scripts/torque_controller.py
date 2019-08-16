@@ -78,10 +78,11 @@ class TorqueController:
         self.vel_target = list(data.velocity)
 
     def cacl_tau(self):
-        kp = np.diag([0.1, 0.04, 0.04, 0.03])
-        # kv = np.diag([3, 2, 2.5, 3])
-        kv = 2*np.sqrt(kp)
-        tau = cacl_tau_GravityCompensation(self.robot, kp, kv, self.pos_target, self.pos_measured,
+        # kp = np.diag([0.25, 0.07, 0.05, 0.00003])
+        # kv = np.diag([1, 0.4, 0.6, 0.001])
+        kp = np.diag([0.05, 0.00, 0.00, 0.0000])
+        kv = np.diag([0.1, 0.0, 0.0, 0.000])
+        tau = cacl_tau_ModelFree(self.robot, kv, kp, self.pos_target, self.pos_measured,
              self.vel_target, self.vel_measured, self.xyz)
         return tau
 

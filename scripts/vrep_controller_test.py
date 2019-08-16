@@ -48,34 +48,48 @@ class ControllerTester:
         self.inbore = CtRobot(name='inbore_arm', num_joints=4, joint_type=['r','r','r','p'])
 
         # Set up simulation parameter
-        self.dt = 0.01
+        self.dt = 0.002
         self.pr.start()
         self.pr.set_simulation_timestep(self.dt)
 
         # Set up dynamics properties of arm
         for j in range(1, self.inbore._num_joints + 1):
-            self.inbore.arms[j].set_dynamic(True)
+            self.inbore.arms[j].set_dynamic(False)
         self.inbore.arms[0].set_dynamic(False)
 
         # Set up joint properties
         for i in range(self.inbore._num_joints):
-            self.inbore.joints[i].set_joint_mode(JointMode.FORCE)
+            self.inbore.joints[i].set_joint_mode(JointMode.PASSIVE)
             self.inbore.joints[i].set_control_loop_enabled(False)
             self.inbore.joints[i].set_motor_locked_at_zero_velocity(True)
             self.inbore.joints[i].set_joint_position(0)
             self.inbore.joints[i].set_joint_target_velocity(0)
+
+        self.inbore.joints[0].set_joint_mode(JointMode.FORCE)
+        self.inbore.joints[0].set_control_loop_enabled(False)
+        self.inbore.joints[0].set_motor_locked_at_zero_velocity(True)
+        self.inbore.arms[1].set_dynamic(True)
+
         self.pr.step()
+
+
     
         # Generate trajectory
         t = sp.Symbol('t')
 
         # Step response
         traj = [
-            (-30/180*np.pi)*sp.ones(1),
-            (45/180*np.pi)*sp.ones(1),
-            (20/180*np.pi)*sp.ones(1),
-            0.005*sp.ones(1)
+            (-45/180*np.pi)*sp.ones(1),
+            (0/180*np.pi)*sp.ones(1),
+            (0/180*np.pi)*sp.ones(1),
+            0.000*sp.ones(1)
         ]
+        # traj = [
+        #     (-30/180*np.pi)*sp.sin(t*4),
+        #     (30/180*np.pi)*sp.cos(t*4),
+        #     (30/180*np.pi)*sp.cos(t*4),
+        #     0.006*sp.sin(t/2)+0.006
+        # ]
         self.pos = [sp.lambdify(t, i) for i in traj]
         self.vel = [sp.lambdify(t, i.diff(t)) for i in traj]
         self.acc = [sp.lambdify(t, i.diff(t).diff(t)) for i in traj]
