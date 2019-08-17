@@ -65,6 +65,10 @@ class ControllerTester:
             self.inbore.joints[i].set_joint_position(0)
             self.inbore.joints[i].set_joint_target_velocity(0)
 
+        self.inbore.joints[1].set_joint_mode(JointMode.FORCE)
+        self.inbore.joints[1].set_control_loop_enabled(False)
+        self.inbore.joints[1].set_motor_locked_at_zero_velocity(True)
+        self.inbore.arms[2].set_dynamic(True)
         self.inbore.joints[0].set_joint_mode(JointMode.FORCE)
         self.inbore.joints[0].set_control_loop_enabled(False)
         self.inbore.joints[0].set_motor_locked_at_zero_velocity(True)
@@ -79,8 +83,8 @@ class ControllerTester:
 
         # Step response
         traj = [
-            (-45/180*np.pi)*sp.ones(1),
-            (0/180*np.pi)*sp.ones(1),
+            (-40/180*np.pi)*sp.ones(1),
+            (30/180*np.pi)*sp.ones(1),
             (0/180*np.pi)*sp.ones(1),
             0.000*sp.ones(1)
         ]

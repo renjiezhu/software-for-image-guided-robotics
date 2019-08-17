@@ -2,7 +2,7 @@ import numpy as np
 
 
 
-def cacl_tau(robot, kv, kp, posd: list, posm: list, veld: list, velm: list, xyz: list, accd=None):
+def cacl_tau(robot, kp, kv, posd: list, posm: list, veld: list, velm: list, xyz: list, accd=None):
     '''
     Regular torque control: mass and inertia term with gravity compensation implemented by PID controller
 
@@ -33,7 +33,7 @@ def cacl_tau(robot, kv, kp, posd: list, posm: list, veld: list, velm: list, xyz:
     return tau.squeeze()
 
 
-def cacl_tau_ModelFree(robot, kv, kp, posd: list, posm: list, veld: list, velm: list, xyz: list, accd=None):
+def cacl_tau_ModelFree(robot, kp, kv, posd: list, posm: list, veld: list, velm: list, xyz: list, accd=None):
     '''
     Model-Free torque control: identity mass and inertia term implemented by PID controller
 
@@ -64,7 +64,7 @@ def cacl_tau_ModelFree(robot, kv, kp, posd: list, posm: list, veld: list, velm: 
     return tau.squeeze()
 
 
-def cacl_tau_GravityCompensation(robot, kv, kp, posd: list, posm: list, veld: list, velm: list, xyz: list, accd=None):
+def cacl_tau_GravityCompensation(robot, kp, kv, posd: list, posm: list, veld: list, velm: list, xyz: list, accd=None):
     '''
     Gravity compensation torque control: identity mass and inertia term with gravity compensation implemented by PID controller
 
