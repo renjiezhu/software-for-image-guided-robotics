@@ -329,13 +329,13 @@ class RobotState:
         """
 
         # unit base in 3d slicer 'mm' , convert by multipling 1000
-        self.robot_status.translation.x = self.pos[0] * 1000
-        self.robot_status.translation.y = self.pos[1] * 1000
-        self.robot_status.translation.z = self.pos[2] * 1000
+        self.robot_status.translation.x = (self.pos[0]-0.0011) * -1000
+        self.robot_status.translation.z = (self.pos[1]+0.6585) * 1000
+        self.robot_status.translation.y = (self.pos[2]-0.2218) * 1000
 
         # find the quaternion for the current orientation
         # parameter 'axes' corrects for frame differences
-        quat = euler.euler2quat(self.ori[0], self.ori[1], self.ori[2], axes="sxyz")
+        quat = euler.euler2quat(-1*self.ori[0], self.ori[1], self.ori[2], axes="rxzy")
         self.robot_status.rotation.w = quat[0]
         self.robot_status.rotation.x = quat[1]
         self.robot_status.rotation.y = quat[2]
