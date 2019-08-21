@@ -18,6 +18,12 @@
  * July 9th, 2019
  * 
 """
+
+# Calibration pose of robot base
+cali_pose = [-0.5264, -0.6935, +1.2924]
+
+
+
 import rospy
 import numpy as np
 from geometry_msgs.msg import Twist
@@ -62,7 +68,7 @@ class RobotState:
         # pyrep instance
         self._pr = PyRep()
         self._pr.launch(
-            f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/vrep_robot_control/latestCtRobot.ttt",
+            f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/vrep_robot_control/CtRobot.ttt",
             headless=False,
         )
         self._dt = 0.01
@@ -80,7 +86,7 @@ class RobotState:
         self._rotating = False
 
         # keep track of current robot position, orientation and needle position
-        self.pos = [-0.1263, -1.1185, 0.3674]
+        self.pos = cali_pose
         self.ori = [0.0, 0.0, 0.0]
         self.needle_pos = 0.0
 
@@ -105,7 +111,7 @@ class RobotState:
 
         # send confirmed pose
         self.confirmed_pose_pub = rospy.Publisher(
-            "robot_confirmed_pose", Twist, queue_size=1
+            "/vrep_ros_interface/robot_confirmed_pose", Twist, queue_size=1
         )
         self.confirmed_pose = Twist()
 
@@ -300,10 +306,10 @@ class RobotState:
         self.pos = self.__pos[:]
         self.ori = self.__ori[:]
         self.cur_pose = deepcopy(self.__cur_pose)
+        self._ct_robot.set_joint_positions(self.__joint_angles)
+        self._pr.step()
         self._dirty = True
         self.update_vrep()
-        # self._ct_robot.set_joint_positions(self.__joint_angles)
-        # self._pr.step()
         self.send_robot_status()
 
     def update_vrep(self):
@@ -329,9 +335,9 @@ class RobotState:
         """
 
         # unit base in 3d slicer 'mm' , convert by multipling 1000
-        self.robot_status.translation.x = (self.pos[0]+0.1263) * -1000
-        self.robot_status.translation.z = (self.pos[1]+1.1185) * 1000
-        self.robot_status.translation.y = (self.pos[2]-0.3674) * 1000
+        self.robot_status.translation.x = (self.pos[0]-cali_pose[0]) * -1000
+        self.robot_status.translation.z = (self.pos[1]-cali_pose[1]) * 1000
+        self.robot_status.translation.y = (self.pos[2]-cali_pose[2]) * 1000
 
         # find the quaternion for the current orientation
         # parameter 'axes' corrects for frame differences
