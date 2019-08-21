@@ -1,0 +1,33 @@
+Mass properties of Assem4
+     Configuration: Default
+     Coordinate system: Coordinate System1
+
+The center of mass and the moments of inertia are output in the coordinate system of assembled_4dof_arm_2modified
+Mass = 156.18 grams
+
+Volume = 156177.18 cubic millimeters
+
+Surface area = 149334.81  square millimeters
+
+Center of mass: ( millimeters )
+	X = 336.55
+	Y = 0.00
+	Z = -0.01
+
+Principal axes of inertia and principal moments of inertia: ( grams *  square millimeters )
+Taken at the center of mass.
+	 Ix = ( 1.00,  0.00,  0.00)   	Px = 51909.29
+	 Iy = ( 0.00,  0.00, -1.00)   	Py = 5490611.86
+	 Iz = ( 0.00,  1.00,  0.00)   	Pz = 5492888.22
+
+Moments of inertia: ( grams *  square millimeters )
+Taken at the center of mass and aligned with the output coordinate system.
+	Lxx = 51909.36	Lxy = 0.11	Lxz = -600.36
+	Lyx = 0.11	Lyy = 5492888.22	Lyz = 0.07
+	Lzx = -600.36	Lzy = 0.07	Lzz = 5490611.79
+
+Moments of inertia: ( grams *  square millimeters )
+Taken at the output coordinate system.
+	Ixx = 51909.39	Ixy = 0.23	Ixz = -1337.99
+	Iyx = 0.23	Iyy = 23182712.30	Iyz = 0.07
+	Izx = -1337.99	Izy = 0.07	Izz = 23180435.84
