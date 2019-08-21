@@ -15,7 +15,7 @@ Current Start Up Procedure:
 - Open STL file for needle
   - Select module ```Models``` and select the needle model
   - Change the color (in display tab)
-  - In ```Slice Display``` tab, select visible, set mode to intersetion and line width to desired
+  - In ```Slice Display``` tab, select visible, set mode to intersetion and line width (recommend 2px) to desired
 - Start ROS interface
   - Go to base ROS workspace (```~/Documents/igr```)
   - Run 
