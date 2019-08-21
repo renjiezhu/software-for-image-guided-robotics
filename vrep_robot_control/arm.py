@@ -36,7 +36,7 @@ class CtRobot(RobotComponent):
 
         # Motion planning handles
         self._ik_target = Dummy('target'+suffix)
-        self._ik_tip = Dummy('end_joint'+suffix)
+        self._ik_tip = Dummy('tip'+suffix)
         self._ik_needle = Dummy('tip'+suffix)
         # self._ik_group = vrep.simGetIkGroupHandle(name+'_ik'+suffix)
         # self._collision_collection = vrep.simGetCollectionHandle(name+'_arm'+suffix)

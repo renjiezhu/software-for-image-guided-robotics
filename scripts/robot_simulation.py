@@ -62,7 +62,7 @@ class RobotState:
         # pyrep instance
         self._pr = PyRep()
         self._pr.launch(
-            f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt",
+            f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/vrep_robot_control/latestCtRobot.ttt",
             headless=False,
         )
         self._dt = 0.01
@@ -80,7 +80,7 @@ class RobotState:
         self._rotating = False
 
         # keep track of current robot position, orientation and needle position
-        self.pos = [0.0011, -0.6585, 0.2218]
+        self.pos = [-0.1263, -1.1185, 0.3674]
         self.ori = [0.0, 0.0, 0.0]
         self.needle_pos = 0.0
 
@@ -329,9 +329,9 @@ class RobotState:
         """
 
         # unit base in 3d slicer 'mm' , convert by multipling 1000
-        self.robot_status.translation.x = (self.pos[0]-0.0011) * -1000
-        self.robot_status.translation.z = (self.pos[1]+0.6585) * 1000
-        self.robot_status.translation.y = (self.pos[2]-0.2218) * 1000
+        self.robot_status.translation.x = (self.pos[0]+0.1263) * -1000
+        self.robot_status.translation.z = (self.pos[1]+1.1185) * 1000
+        self.robot_status.translation.y = (self.pos[2]-0.3674) * 1000
 
         # find the quaternion for the current orientation
         # parameter 'axes' corrects for frame differences
