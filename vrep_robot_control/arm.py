@@ -11,8 +11,8 @@ class CtRobot(RobotComponent):
     """Robot class representing a robot arm with based on Vrep model.
     """
 
-    def __init__(self, count: int = 0, name: str = 'ct_robot', num_joints: int = 7,
-                 base_name: str = None, joint_type : list = ['p', 'p', 'r', 'r', 'r', 'r', 'p'], 
+    def __init__(self, count: int = 0, name: str = 'ct_robot', num_joints: int = 8,
+                 base_name: str = None, joint_type : list = ['p', 'p', 'p', 'r', 'r', 'r', 'r', 'p'], 
                  link : list = []):
         """Count is used for when we have multiple copies of arms"""
         suffix = '' if count == 0 else '#%d' % (count - 1)
@@ -29,10 +29,10 @@ class CtRobot(RobotComponent):
 
         part_names = ['arm%d_dynamic' % i for i in range(num_joints+1)]
         self.arms = [Shape(pname + suffix) for pname in part_names]
-        frame_names = ['COM_arm%d' % i for i in range(num_joints+1)]
-        self.COMs = [Dummy(fname + suffix) for fname in frame_names]
-        DH_frame_names = ['DH_frame_j%d' % i for i in range(num_joints+1)]
-        self.DH_frames = [Dummy(dhfname + suffix) for dhfname in DH_frame_names]
+        # frame_names = ['COM_arm%d' % i for i in range(num_joints+1)]
+        # self.COMs = [Dummy(fname + suffix) for fname in frame_names]
+        # DH_frame_names = ['DH_frame_j%d' % i for i in range(num_joints+1)]
+        # self.DH_frames = [Dummy(dhfname + suffix) for dhfname in DH_frame_names]
 
         # Motion planning handles
         self._ik_target = Dummy('target'+suffix)
