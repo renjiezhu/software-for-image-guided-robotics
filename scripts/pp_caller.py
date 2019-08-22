@@ -6,11 +6,11 @@ import rospy
 class PathPlanning:
 
     def __init__(self):
-        rospy.init_node("robot_path_planning", anonymous=True)
+        rospy.init_node("robot_pp", anonymous=True)
         self.pr = PyRep()
         self.pr.launch(
             f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/vrep_robot_control/CtRobot_pathplanning.ttt",
-            headless=True,
+            headless=False,
         )
 
         self.pr.set_simulation_timestep(0.005)
@@ -28,13 +28,15 @@ class PathPlanning:
         """
         shutdown vrep safely
         """
-        self.pr.stop()
+        # self.pr.stop()
         rospy.loginfo("V-REP shutting down.")
         self.pr.shutdown()
 
     def run(self):
         self.pr.start()
-        signal.signal(signal.SIGINT, self.signal_handler)
+        while not rospy.is_shutdown():
+            self.pr.step()
+            signal.signal(signal.SIGINT, self.signal_handler)
         rospy.spin()
 
 if __name__ == "__main__":
