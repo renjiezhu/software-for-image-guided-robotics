@@ -14,6 +14,5 @@ def callback(input_msg):
 
 if __name__ == "__main__":
     rospy.init_node("test_of_PP", anonymous=True)
-    rospy.Subscriber("/vrep_ros_interface/target_joint_positions", JointState, callback)
-    
+    rospy.Subscriber("/vrep_path_planning/target_joint_positions", JointState, callback)
     rospy.spin()
