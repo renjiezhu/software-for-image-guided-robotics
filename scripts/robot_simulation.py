@@ -111,7 +111,7 @@ class RobotState:
 
         # send confirmed pose
         self.confirmed_pose_pub = rospy.Publisher(
-            "/vrep_ros_interface/robot_confirmed_pose", Twist, queue_size=1
+            "/vrep_path_planning/robot_confirmed_pose", Twist, queue_size=1
         )
         self.confirmed_pose = Twist()
 

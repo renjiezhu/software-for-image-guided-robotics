@@ -20,17 +20,18 @@
 """
 import rospy
 import numpy as np
-from std_msgs.msg import Float64
+# from std_msgs.msg import Float64
+from sensor_msgs.msg import JointState
 
 def publisher():
     pub = rospy.Publisher("sine", Float64, queue_size=1)
     rospy.init_node("sine_test", anonymous=True)
-    rate = rospy.Rate(1)
+    rate = rospy.Rate(500)
     t = 0.0
-    dt = 0.1
+    dt = 0.002
     while not rospy.is_shutdown():
-        sine = Float64()
-        sine.data = np.sin(t)
+        sine = JointState()
+        sine.position = [np.sin(t)] * 8
         t += dt
         pub.publish(sine)
         rate.sleep()
