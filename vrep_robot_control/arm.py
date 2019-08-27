@@ -8,7 +8,10 @@ import numpy as np
         
 
 class CtRobot(RobotComponent):
-    """Robot class representing a robot arm with based on Vrep model.
+    """
+    Robot class representing a robot arm with based on Vrep model and PyRep.
+
+    Containing handle of joints, arms, COMs, DH_frames, ik_target, ik_tip, needle_tip.
     """
 
     def __init__(self, count: int = 0, name: str = 'ct_robot', num_joints: int = 8,
@@ -29,8 +32,8 @@ class CtRobot(RobotComponent):
 
         part_names = ['arm%d_dynamic' % i for i in range(num_joints+1)]
         self.arms = [Shape(pname + suffix) for pname in part_names]
-        # frame_names = ['COM_arm%d' % i for i in range(num_joints+1)]
-        # self.COMs = [Dummy(fname + suffix) for fname in frame_names]
+        # com_names = ['COM_arm%d' % i for i in range(num_joints+1)]
+        # self.COMs = [Dummy(fname + suffix) for com in com_names]
         # DH_frame_names = ['DH_frame_j%d' % i for i in range(num_joints+1)]
         # self.DH_frames = [Dummy(dhfname + suffix) for dhfname in DH_frame_names]
 
@@ -42,6 +45,15 @@ class CtRobot(RobotComponent):
         # self._collision_collection = vrep.simGetCollectionHandle(name+'_arm'+suffix)
 
         
+    '''
+    The following function are meant to implement some Regular API of VREP through PyRep.
+    They are implemented by using 'script_call' function of PyRep and writing Lua code in 
+    corresponding Vrep model. 
+
+    Some of the functions are stilling under testing and debugging.
+    USE WITH CAUTION!!!!
+    '''   
+
     def getJacobian(self):
         '''Retrive Jacobian matrix from V-REP'''
         Jsize, J, _, _ = utils.script_call('getJacobian@ct_robot', vrepConst.sim_scripttype_childscript, ints=[], floats=[], strings=[])
@@ -64,4 +76,5 @@ class CtRobot(RobotComponent):
         return mass, inertia, centerofmass
 
     def saveScene(self, filename):
+        '''Save scene'''
         _, _, _, _ = utils.script_call('saveScene@ct_robot', vrepConst.sim_scripttype_childscript, ints=[], floats=[], strings=[filename])

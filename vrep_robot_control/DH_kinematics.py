@@ -12,22 +12,17 @@ head_path = f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/vr
 
 class dh_robot_config:
     ''' 
-    Provides a robot class for forward and inverse kinematics, jacobian calculation, 
-    Mass matirx and Gravity matrix based on modified DH parameters.
-
-    Implemented through Sympy to generate callable function 
+    provides a robot class for forward and inverse kinematics, jacobian calculation based 
+    on modified DH parameters as defined in 'Introduction to Robotics, Mechanics and Control'.
     '''
     
-    def __init__(self, num_joints, alpha, theta, D, a, jointType, Tbase, L, M, folder_name):
+    def __init__(self, num_joints, alpha, theta, D, a, jointType, Tbase, L):
         
         '''
         D-H parameter includes: number of joints, D, a, alpha, theta and 
             jointType = prismatic or revolute type of joints 
             Tbase = transformation of base frame with respect to world frame
             L = COM of each link with respect to their D-H frames.
-            M = Mass and principal inertia matrix of each link that has size of 
-                [m, m, m, Ixx, Iyy, Izz]
-            folder_name = where to save and read the calculated Jacobian, Mass and Gravity matrix
         '''
         self.num_joints = num_joints
         self.alpha = alpha
@@ -35,39 +30,27 @@ class dh_robot_config:
         self.D = D
         self.a = a
         self.jointType = jointType
-        self.config_folder = folder_name
-        self.num_links = num_joints + 1  # number of links include base arms
+        self.config_folder = 'robot_config'
+        self.num_links = num_joints + 1
         
-        # joint angles
         self.q = [sp.Symbol('q%i' % (ii+1)) for ii in range(self.num_joints)]
-        # joint speed
         self.dq = [sp.Symbol('dq%i' % (ii+1)) for ii in range(self.num_joints)]
-        # Offset of robot with respect to the world frame
-        # default is [0, 0, 0]
         self.x = [sp.Symbol('x'), sp.Symbol('y'), sp.Symbol('z')]
              
-        # Base DH-frame transformation with respect to world frame
         self._Tbase = Tbase
         self._Tj2j = []  # transformation from joint to joint
         self._Tj2l = []  # transformation from joint to link
         self._Tjoint = []  # transformation from base frame to joint
         self._Tlink = []  # transformation from base frame to link
         
-        # Rotatioin matrix 
-        # lambda = mathematical representation contain joint angles
         self._Rjointlambda = []
         self._Rlinklambda = []
         self._Tjointlambda = []
         self._Tlinklambda = []
-
-        # Transformation of joint and link with respect to world frame 
-        # generated callable function 
         self._Tx_joint = []
         self._Tx_link = []
         self._Tx_inv_joint = []
         self._Tx_inv_link = []
-
-        # Jacobian of joint and link with respect to world frame
         self._J_position_joint = []
         self._J_orientation_joint = []
         self._J_position_link = []
@@ -76,8 +59,6 @@ class dh_robot_config:
         self._J_link = []
         self._J_jointlambda = []
         self._J_linklambda = []
-
-        # Mass and gravity matrix of whole robot arm 
         self._Mq = []
         self._Gq = []
         self._Mqlambda = []
@@ -86,8 +67,8 @@ class dh_robot_config:
         # accounting for mass and gravity term
         self._M = []
         self.gravity = sp.Matrix([0,0,-9.81,0,0,0])
-        self._L = L
 
+        self._L = L
         #constructs transform matrices for joints
         for i in range(self.num_joints + 1):
             self._M.append(np.diag(M[i]))
@@ -172,12 +153,6 @@ class dh_robot_config:
             self._J_link.append(self._calc_J(self._Tlink[i], i, 'link', lambdify = True))
             self._J_linklambda.append(self._calc_J(self._Tlink[i], i, 'link', lambdify = False))
 
-        # calculate mass and gravity matrix in joint space
-        print('Calculating Mass and Gravity Matrix...')
-        print('-------------------------------------------------------------------')
-        self._calc_Mq(lambdify=True)
-        self._calc_Gq(lambdify=True)
-        print('Calculation complete')
         
     def _calc_Tx(self, T, lambdify = True):
         Tx =  T * sp.Matrix(self.x + [1])  # appends a 1 to the column vector x
@@ -242,63 +217,6 @@ class dh_robot_config:
 
     def Tx_inv(self, name, x, lambdify=True):  # --------------------------------------------- need to be revised
         pass
-    
-    def _calc_Mq(self, lambdify=True):
-        """ Uses Sympy to generate the inertia matrix in
-        joint space for the ur5
-        lambdify boolean: if True returns a function to calculate
-                          the Jacobian. If False returns the Sympy
-                          matrix
-        """
-        for ii in range(self.num_links):
-            # check to see if we have our inertia matrix saved in file
-            if os.path.isfile(head_path+'/%s/M/Mq_%d' % (self.config_folder, ii)):
-                M = cloudpickle.load(open(head_path+'/%s/M/Mq_%d' % (self.config_folder, ii), 'rb'))
-            else:
-                # transform each inertia matrix into joint space
-                M = self._J_linklambda[ii].T * self._M[ii] * self._J_linklambda[ii]
-                # save to file
-                cloudpickle.dump(M, open(head_path+'/%s/M/Mq' % self.config_folder, 'wb'))
-            if lambdify is False:
-                self._Mqlambda.append(M)
-            else:
-                self._Mq.append(sp.lambdify(self.q + self.x, M))
-
-    def _calc_Gq(self, lambdify=True):
-        """ Uses Sympy to generate the force of gravity in
-        joint space for the ur5
-        lambdify boolean: if True returns a function to calculate
-                          the Jacobian. If False returns the Sympy
-                          matrix
-        """
-        for ii in range(self.num_joints):
-            # check to see if we have our gravity term saved in file
-            if os.path.isfile(head_path+'/%s/G/Gq_%d' % (self.config_folder, ii)):
-                G = cloudpickle.load(open(head_path+'/%s/G/Gq_%d' % (self.config_folder, ii), 'rb'))
-            else:
-                # transform each inertia matrix into joint space
-                G = self._J_linklambda[ii].T * self._M[ii] * self.gravity
-                # save to file
-                cloudpickle.dump(G, open(head_path+'/%s/G/Gq_%d' % (self.config_folder, ii), 'wb'))
-            if lambdify is False:
-                self._Gqlambda.append(G)
-            else:
-                self._Gq.append(sp.lambdify(self.q + self.x, G))
-        
-
-    def Mq(self, q, x=[0, 0, 0]):
-        M = np.zeros((self.num_joints, self.num_joints))
-        param = tuple(q) + tuple(x)
-        for ii in range(self.num_links):            
-            M += self._Mq[ii](*param)
-        return M
-
-    def Gq(self, q, x=[0, 0, 0]):
-        G = np.zeros((self.num_joints,1))
-        param = tuple(q) + tuple(x)
-        for ii in range(self.num_joints):            
-            G += self._Gq[ii](*param)
-        return G
 
 
 
@@ -307,8 +225,8 @@ if __name__ == '__main__':
     param = ['D', 'a', 'alpha', 'theta', 'num_joints', 'jointType', 'Tbase', 'L', 'M']
     config = dict()
     for i in range(len(param)):
-        config[param[i]] = np.load('./robot_config/inbore/config/%s.npy'%param[i])
+        config[param[i]] = np.load('./robot_config/config1/%s.npy'%param[i])
     
     robot = dh_robot_config(int(config['num_joints']), config['alpha'], config['theta'], config['D'], config['a'], 
-                                                config['jointType'], config['Tbase'], config['L'], config['M'], 'robot_config/inbore')
+                                                config['jointType'], config['Tbase'], config['L'], config['M'])
     robot.initKinematicTransforms()

@@ -4,11 +4,18 @@ import sympy as sp
 import os
 import transforms3d as t3d
 
-def getMassfromSW(file_name):
-    '''Get Mass, Inertiam Center of Mass from CAD in Solidworks'''
+def getMassfromSW(file_name):    
+    '''
+    Get Mass, Inertia and Center of Mass from measurement of CAD in Solidworks.
+    
+    Note default reference axis and unit of Solidworks is different from VREP.
+    The transformation has been implemented in the following code based on default setting of both software.
+    '''
+    
     inertia = np.zeros((3, 3))
     centr_of_mass = np.zeros(3)
     f = open(file_name + '.txt')
+    
     # Read from file
     lines = f.readlines()
     for i, line in enumerate(lines):
@@ -25,11 +32,13 @@ def getMassfromSW(file_name):
         txt = line.split('=')
         for j in range(3):
             inertia[i, j] = float(txt[j+1].strip().split('\t')[0])
+            
     # Align the base from between V-REP and Soliworks
     tmp = centr_of_mass.copy()
     centr_of_mass[2] = tmp[1]
     centr_of_mass[1] = -tmp[2]
     centr_of_mass = centr_of_mass/1000
+    
     # Align unit and form
     inertia = inertia*1e-9/mass
     tmp = inertia.copy()

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """
  * Software Interface for Image Guided Robotics
  * 
@@ -18,20 +19,28 @@
  * July 9th, 2019
  * 
 """
-import rospy
+import rospy, sys
 import numpy as np
 # from std_msgs.msg import Float64
 from sensor_msgs.msg import JointState
 
 def publisher():
-    pub = rospy.Publisher("sine", Float64, queue_size=1)
+    pub = rospy.Publisher("sine", JointState, queue_size=1)
+    # pub = rospy.Publisher("sine", Float64, queue_size=1)
     rospy.init_node("sine_test", anonymous=True)
     rate = rospy.Rate(500)
     t = 0.0
     dt = 0.002
+
     while not rospy.is_shutdown():
+
         sine = JointState()
-        sine.position = [np.sin(t)] * 8
+        # sine = Float64()
+        sine.position = [4000 for _ in range(8)]
+        # sine.data = (np.sin(t) + 1.0) * 0.5
+        # sine.name [" "] * 8
+        # sine.velocity = [np.sin(t) for _ in range(8)]
+        # sine.effort = [np.sin(t) for _ in range(8)]
         t += dt
         pub.publish(sine)
         rate.sleep()
@@ -40,5 +49,5 @@ def publisher():
 if __name__ == "__main__":
     try:
         publisher()
-    except:
-        pass
+    except NameError:
+        print("something wrong ", sys.exc_info()[0])
