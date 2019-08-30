@@ -1,5 +1,6 @@
 <launch>
-
+  <!-- <node name="FPGA_controller" pkg="software_interface" type="test_of_PP.py" output="screen"/> -->
+  
   <node name="robot_simulation" pkg="software_interface" type="robot_simulation.py" />
 
   <node name="keyboard_input" pkg="software_interface" type="keyboard_control" output="screen"/>

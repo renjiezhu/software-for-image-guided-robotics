@@ -2,7 +2,7 @@
 """
  * Software Interface for Image Guided Robotics
  * 
- * Listerner 
+ * robot_simulation
  * 
  * Topics Published:
  * * robot_status_TRANSFORM (geometry_msgs/Transform)
@@ -18,6 +18,10 @@
  * July 9th, 2019
  * 
 """
+
+# Calibration pose of robot base
+cali_pose = [-0.5264, -0.6935, +1.2924]
+
 import rospy
 import numpy as np
 from geometry_msgs.msg import Twist
@@ -75,13 +79,13 @@ class RobotState:
 
     def __init__(self):
 
-        rospy.init_node("robot_control_listener_python", anonymous=True)
+        rospy.init_node("robot_simulation", anonymous=True)
         rospy.loginfo("V-REP update node is initialized...")
 
         # pyrep instance
         self._pr = PyRep()
         self._pr.launch(
-            f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/vrep_robot_control/ct_robot_realigned.ttt",
+            f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/vrep_robot_control/CtRobot.ttt",
             headless=False,
         )
         self._dt = 0.01
@@ -100,7 +104,7 @@ class RobotState:
         self._rotating = False
 
         # keep track of current robot position, orientation and needle position
-        self.pos = [0.0011, -0.6585, 0.2218] # calibrate for actual robot position
+        self.pos = cali_pose # calibrate for actual robot position
         self.ori = [0.0, 0.0, 0.0]
         self.needle_pos = 0.0
 
@@ -125,7 +129,7 @@ class RobotState:
 
         # send confirmed pose
         self.confirmed_pose_pub = rospy.Publisher(
-            "robot_confirmed_pose", Twist, queue_size=1
+            "/vrep_path_planning/robot_confirmed_pose", Twist, queue_size=1
         )
         self.confirmed_pose = Twist()
 
@@ -343,10 +347,10 @@ class RobotState:
         self.pos = self.__pos[:]
         self.ori = self.__ori[:]
         self.cur_pose = deepcopy(self.__cur_pose)
+        self._ct_robot.set_joint_positions(self.__joint_angles)
+        self._pr.step()
         self._dirty = True
         self.update_vrep()
-        # self._ct_robot.set_joint_positions(self.__joint_angles)
-        # self._pr.step()
         self.send_robot_status()
 
     def update_vrep(self):
@@ -372,9 +376,9 @@ class RobotState:
         """
 
         # unit base in 3d slicer 'mm' , convert by multipling 1000
-        self.robot_status.translation.x = (self.pos[0]-0.0011) * -1000
-        self.robot_status.translation.z = (self.pos[1]+0.6585) * 1000
-        self.robot_status.translation.y = (self.pos[2]-0.2218) * 1000
+        self.robot_status.translation.x = (self.pos[0]-cali_pose[0]) * -1000
+        self.robot_status.translation.z = (self.pos[1]-cali_pose[1]) * 1000
+        self.robot_status.translation.y = (self.pos[2]-cali_pose[2]) * 1000
 
         # find the quaternion for the current orientation
         # parameter 'axes' corrects for frame differences
