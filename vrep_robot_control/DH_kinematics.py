@@ -10,19 +10,24 @@ import cloudpickle
 pi = np.pi
 head_path = f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/vrep_robot_control"
 
-class dh_robot_config:
+class dh_robot_config_kinematics:
     ''' 
     provides a robot class for forward and inverse kinematics, jacobian calculation based 
     on modified DH parameters as defined in 'Introduction to Robotics, Mechanics and Control'.
+
+    Implemented through Sympy to generate callable function 
     '''
     
-    def __init__(self, num_joints, alpha, theta, D, a, jointType, Tbase, L):
+    def __init__(self, num_joints, alpha, theta, D, a, jointType, Tbase, L, M, folder_name):
         
         '''
         D-H parameter includes: number of joints, D, a, alpha, theta and 
             jointType = prismatic or revolute type of joints 
             Tbase = transformation of base frame with respect to world frame
             L = COM of each link with respect to their D-H frames.
+            M = Mass and principal inertia matrix of each link that has size of 
+                [m, m, m, Ixx, Iyy, Izz]
+            folder_name = where to save and read the calculated Jacobian, Mass and Gravity matrix
         '''
         self.num_joints = num_joints
         self.alpha = alpha
@@ -30,45 +35,38 @@ class dh_robot_config:
         self.D = D
         self.a = a
         self.jointType = jointType
-        self.config_folder = 'robot_config'
-        self.num_links = num_joints + 1
+        self.config_folder = folder_name
+        self.num_links = num_joints + 1  # number of links include base arms
         
+        # joint angles
         self.q = [sp.Symbol('q%i' % (ii+1)) for ii in range(self.num_joints)]
+        # joint speed
         self.dq = [sp.Symbol('dq%i' % (ii+1)) for ii in range(self.num_joints)]
+        # The position of point with respect to its own DH frames
+        # default is [0, 0, 0]
         self.x = [sp.Symbol('x'), sp.Symbol('y'), sp.Symbol('z')]
              
+        # Base DH-frame transformation with respect to world frame
         self._Tbase = Tbase
         self._Tj2j = []  # transformation from joint to joint
         self._Tj2l = []  # transformation from joint to link
         self._Tjoint = []  # transformation from base frame to joint
         self._Tlink = []  # transformation from base frame to link
         
+        # Rotatioin matrix 
+        # lambda = mathematical representation contain joint angles
         self._Rjointlambda = []
         self._Rlinklambda = []
         self._Tjointlambda = []
         self._Tlinklambda = []
+
+        # Transformation of joint and link with respect to world frame 
+        # generated callable function 
         self._Tx_joint = []
         self._Tx_link = []
         self._Tx_inv_joint = []
         self._Tx_inv_link = []
-        self._J_position_joint = []
-        self._J_orientation_joint = []
-        self._J_position_link = []
-        self._J_orientation_link = []
-        self._J_joint = []
-        self._J_link = []
-        self._J_jointlambda = []
-        self._J_linklambda = []
-        self._Mq = []
-        self._Gq = []
-        self._Mqlambda = []
-        self._Gqlambda = []
-        
-        # accounting for mass and gravity term
-        self._M = []
-        self.gravity = sp.Matrix([0,0,-9.81,0,0,0])
 
-        self._L = L
         #constructs transform matrices for joints
         for i in range(self.num_joints + 1):
             self._M.append(np.diag(M[i]))
@@ -85,7 +83,8 @@ class dh_robot_config:
                     D += self.q[i-1]            
                 else:
                     print("error in joint {} type, neither prismatic (p) or revolute (r)".format(i-1))
-                
+
+                # transformation between DH frames based on modified DH parameters
                 t = sp.Matrix([
                     [sp.cos(theta), -sp.sin(theta), 0, a],
                     [sp.sin(theta)*sp.cos(alpha), sp.cos(theta)*sp.cos(alpha), -sp.sin(alpha), -D*sp.sin(alpha)],
@@ -93,6 +92,7 @@ class dh_robot_config:
                     [0, 0, 0, 1]])    
                 self._Tj2j.append(t)
 
+            # transformation from DH frames to the COM of each arm
             l = sp.Matrix([
                 [1, 0, 0, self._L[i, 0]],
                 [0, 1, 0, self._L[i, 1]],
@@ -121,11 +121,13 @@ class dh_robot_config:
             if i < self.num_joints:
                 self._Rjointlambda.append(sp.lambdify(self.q, self._Tjoint[i][:3,:3]))
             self._Rlinklambda.append(sp.lambdify(self.q, self._Tlink[i][:3,:3]))
+
             # Transformation of joint and link with respect to world frame
             # Default is [0, 0, 0] (Robot base frame coincide with world frame)
             if i < self.num_joints:
                 self._Tx_joint.append(self._calc_Tx(self._Tjoint[i]))
             self._Tx_link.append(self._calc_Tx(self._Tlink[i]))
+
             # calculate inverse transformations of joint and link
             if i < self.num_joints:
                 Tx = self._Tjoint[i]
@@ -138,95 +140,49 @@ class dh_robot_config:
             translation_inv = -rotation_inv * Tx[:3, 3]
             Tx_inv = rotation_inv.row_join(translation_inv).col_join(sp.Matrix([[0, 0, 0, 1]]))
             self._Tx_inv_link.append(sp.lambdify(self.q + self.x, Tx_inv))
-            # calculate jacobian of joint
-            if i < self.num_joints:
-                # print('Calculating joint %d' % (i+1))
-                # print('-------------------------------------------------------------------')
-                self._J_position_joint.append(self._calc_J_position(self._Tjoint[i], lambdify = True))
-                self._J_orientation_joint.append(self._calc_J_orientation(self._Tjoint[i], i, lambdify = True))
-                self._J_joint.append(self._calc_J(self._Tjoint[i], i, 'joint', lambdify = True))
-                self._J_jointlambda.append(self._calc_J(self._Tjoint[i], i, 'joint', lambdify = False))
-            print('Calculating link %d' % i)
-            # calculate jacobian of link
-            self._J_position_link.append(self._calc_J_position(self._Tlink[i], lambdify = True))
-            self._J_orientation_link.append(self._calc_J_orientation(self._Tlink[i], i, lambdify = True))
-            self._J_link.append(self._calc_J(self._Tlink[i], i, 'link', lambdify = True))
-            self._J_linklambda.append(self._calc_J(self._Tlink[i], i, 'link', lambdify = False))
 
-        
     def _calc_Tx(self, T, lambdify = True):
+        # generate lambdified function of transformation matrix from 
         Tx =  T * sp.Matrix(self.x + [1])  # appends a 1 to the column vector x
         if lambdify:
             return sp.lambdify(self.q + self.x, Tx)
         return Tx
 
-    def Tx(self, T, q, x=[0, 0, 0]):  # --------------------------------------------- need to be revised
+    def Tx(self, name, i, q, x=[0, 0, 0]):
+        """ Calculate transformation matrix of a point with respect to world frame given its
+            poisiton with respect to its own DH frame
+            
+            name : string = 'link' or 'joint' that represent the transformation of COM or DH frames
+            i : int = 
+            q : list = joint angles in joint space
+            x : list = position of base frame with respect to world frame 
+        """
         parameters = tuple(q) + tuple(x)
-        return T(*parameters)[:-1].flatten()
-    
-    def Orientation_quaternion(self, i, q):  # --------------------------------------------- need to be revised
-        parameters = tuple(q)
-        return t3d.quaternions.mat2quat(self._Rjointlambda[i](*parameters))
-    
-    def Orientation_euler(self, i, q):  # --------------------------------------------- need to be revised
-        parameters = tuple(q)
-        return t3d.euler.mat2euler(self._Rjointlambda[i](*parameters))
-    
-    def Orientation_axAngle(self, i, q):  # --------------------------------------------- need to be revised
-        parameters = tuple(q)
-        return t3d.axangles.mat2axangle(self._Rjointlambda[i](*parameters))
-    
-    def _calc_J_position(self, T, lambdify = True):
-        Tx = self._calc_Tx(T, lambdify = False)
-        J = Tx.jacobian(sp.Matrix(self.q))[:3,:]
-        if lambdify:
-            return sp.lambdify(self.q + self.x, J)
-        return J
-    
-    def _calc_J_orientation(self, T, x, lambdify = True):
-        i=x if x==0 else x-1
-        J = sp.zeros(3,self.num_joints)
-        for j in range(i+1):
-            if self.jointType[j] == 'r':
-                z_hat = sp.Matrix([0, 0, 1])
-            elif self.jointType[j] == 'p':
-                z_hat = sp.Matrix([0, 0, 0])
-            else:
-                print('joint type is not revolute (r) or prismatic (p)')
-                break
-            J[:,j] = T[:3,:3] * z_hat
-        if lambdify:
-            return sp.lambdify(self.q + self.x, J)
-        return J
-    
-    def _calc_J(self, T, i, T_type, lambdify=True):
-        if os.path.isfile(head_path+'/%s/J/J_%s%d' % (self.config_folder, T_type, i)):
-            J = cloudpickle.load(open(head_path+'/%s/J/J_%s%d' % (self.config_folder, T_type, i), 'rb'))
+        if name == 'joint':
+            return self._Tx_joint[i](*parameters)
         else:
-            x = self._calc_J_position(T, lambdify=False)
-            y = self._calc_J_orientation(T, i, lambdify=False)
-            J = x.col_join(y)
-            cloudpickle.dump(J, open(head_path+'/%s/J/J_%s%d' % (self.config_folder, T_type, i), 'wb'))
-        if lambdify:
-            return sp.lambdify(self.q + self.x, J)
-        return J
-        
-    def Jx(self, T, q, x=[0, 0, 0]):
+            return self._Tx_joint[i](*parameters)
+
+    def Tx_inv(self, name, i, q, x=[0, 0, 0]):
+        """ Calculate Inverse transformation matrix of a point with respect to world frame given its
+            poisiton with respect to its own DH frame
+            
+            name : string = 'link' or 'joint' that represent the transformation of COM or DH frames
+            i : int = index of which joint
+            q : list = joint angles in joint space
+            x : list = position of base frame with respect to world frame 
+        """
         parameters = tuple(q) + tuple(x)
-        return np.array(T(*parameters))
-
-    def Tx_inv(self, name, x, lambdify=True):  # --------------------------------------------- need to be revised
-        pass
-
-
+        if name == 'joint':
+            return self._Tx_inv_joint[i](*parameters)
 
 
 if __name__ == '__main__':      
     param = ['D', 'a', 'alpha', 'theta', 'num_joints', 'jointType', 'Tbase', 'L', 'M']
     config = dict()
     for i in range(len(param)):
-        config[param[i]] = np.load('./robot_config/config1/%s.npy'%param[i])
+        config[param[i]] = np.load('./robot_config/inbore/config/%s.npy'%param[i])
     
-    robot = dh_robot_config(int(config['num_joints']), config['alpha'], config['theta'], config['D'], config['a'], 
-                                                config['jointType'], config['Tbase'], config['L'], config['M'])
+    robot = dh_robot_config_kinematics(int(config['num_joints']), config['alpha'], config['theta'], config['D'], config['a'], 
+                                                config['jointType'], config['Tbase'], config['L'], config['M'], 'robot_config/inbore')
     robot.initKinematicTransforms()
