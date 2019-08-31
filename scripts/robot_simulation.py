@@ -135,9 +135,9 @@ class RobotState:
 
         # send confirmed joint angles
         self.confirmed_ja_pub = rospy.Publisher(
-            "robot_confirmed_ja", JointAngles, queue_size=1
+            "robot_confirmed_ja", JointState, queue_size=1
         )
-        self.confirmed_ja = JointAngles()
+        self.confirmed_ja = JointState()
 
         # streaming of joint angles
         self.joint_angles_pub = rospy.Publisher(

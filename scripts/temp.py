@@ -12,5 +12,5 @@ def callback(input_msg):
 
 if __name__ == "__main__":
     rospy.init_node("test_listener", anonymous=True)
-    rospy.Subscriber("torque_tau_controller", JointState, callback)
+    rospy.Subscriber("/vrep_path_planning/target_joint_positions", JointState, callback)
     rospy.spin()

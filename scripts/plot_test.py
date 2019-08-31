@@ -28,15 +28,16 @@ def publisher():
     pub = rospy.Publisher("sine", JointState, queue_size=1)
     # pub = rospy.Publisher("sine", Float64, queue_size=1)
     rospy.init_node("sine_test", anonymous=True)
-    rate = rospy.Rate(500)
+    rate = rospy.Rate(1000)
     t = 0.0
-    dt = 0.002
+    dt = 0.005
 
     while not rospy.is_shutdown():
 
         sine = JointState()
         # sine = Float64()
-        sine.position = [4000 for _ in range(8)]
+        sine.position = [60*np.sin(t) for _ in range(8)]
+        print(sine.position[0])
         # sine.data = (np.sin(t) + 1.0) * 0.5
         # sine.name [" "] * 8
         # sine.velocity = [np.sin(t) for _ in range(8)]
@@ -44,6 +45,7 @@ def publisher():
         t += dt
         pub.publish(sine)
         rate.sleep()
+
 
 
 if __name__ == "__main__":

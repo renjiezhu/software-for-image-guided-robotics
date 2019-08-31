@@ -29,3 +29,10 @@ Current Start Up Procedure:
   - Select module ```Transforms```
   - Select transform ```needle_pose``` in the dropdown menu
   - Scroll to bottom and assign the needle model to this transform
+
+
+*For path planning to work, run the following command when roscore is up.*
+
+```bash
+/opt/VREP/vrep.sh -h -GRosInterface.nodeName=vrep_path_planning -s1000000000000000 -q ./src/software_interface/vrep_robot_control/CtRobot_pathplanning.ttt 
+```
