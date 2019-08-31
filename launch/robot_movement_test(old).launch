@@ -1,0 +1,8 @@
+<launch>
+  <!-- <node name="python_listener" pkg="software_interface" type="robot_control_listener_python.py" output="screen"/> -->
+  <node name="python_listener" pkg="software_interface" type="robot_simulation.py" />
+
+  <node name="keyboard_input" pkg="software_interface" type="robot_control_key" output="screen"/>
+  <node name="robot_control" pkg="software_interface" type="motor_controller.py" output="screen"/>
+
+</launch>

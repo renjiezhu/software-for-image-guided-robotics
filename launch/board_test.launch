@@ -1,8 +1,0 @@
-<launch>
-
-  <node name="board" pkg="software_interface" type="plot_test.py" />
-
-  <!-- <node name="keyboard_input" pkg="software_interface" type="keyboard_control" output="screen"/> -->
-
-  <node name="rosbag_all" pkg="rosbag" type="record" args="record -a" />
-</launch>
