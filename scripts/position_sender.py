@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
  * Software Interface for Image Guided Robotics
  * 

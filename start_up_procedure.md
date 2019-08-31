@@ -22,7 +22,7 @@ Current Start Up Procedure:
     ```bash
     $ catkin_make
     $ source devel/setup.bash
-    $ roslaunch software_interface overlay.launch
+    $ roslaunch software_interface overlay.launch # look into the choices in launch folder
     ```
   - Send an transform for initialization
 - Assign transform to needle
