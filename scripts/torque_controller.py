@@ -20,10 +20,11 @@ import rospy
 import numpy as np
 import sys, os
 sys.path.append(f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/")
+sys.path.append(f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/vrep_robot_control")
 
 from sensor_msgs.msg import JointState
 from vrep_robot_control.JS_control import *
-from vrep_robot_control.DH_dynamics import dh_robot_config
+from vrep_robot_control.DH_dynamics import dh_robot_config_dynamics
 from vrep_robot_control.arm import CtRobot
 import sympy as sp
 
@@ -46,11 +47,11 @@ class TorqueController:
         param = ['D', 'a', 'alpha', 'theta', 'num_joints', 'jointType', 'Tbase', 'L', 'M']
         config = dict()
         for i in range(len(param)):
-            config[param[i]] = np.load(f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/vrep_robot_control/robot_config/inbore_config/{param[i]}.npy")
+            config[param[i]] = np.load(f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/vrep_robot_control/robot_config/inbore/config/{param[i]}.npy")
 
         # Initialization 
-        self.robot = dh_robot_config(int(config['num_joints']), config['alpha'], config['theta'], config['D'], config['a'], 
-                                                config['jointType'], config['Tbase'], config['L'], config['M'])
+        self.robot = dh_robot_config_dynamics(int(config['num_joints']), config['alpha'], config['theta'], config['D'], config['a'], 
+                                                config['jointType'], config['Tbase'], config['L'], config['M'], 'robot_config/inbore')
         self.robot.initKinematicTransforms()
 
         # publisher

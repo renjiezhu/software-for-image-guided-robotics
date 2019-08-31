@@ -39,9 +39,6 @@ def publisher():
         sine.position = [60*np.sin(t) for _ in range(8)]
         print(sine.position[0])
         # sine.data = (np.sin(t) + 1.0) * 0.5
-        # sine.name [" "] * 8
-        # sine.velocity = [np.sin(t) for _ in range(8)]
-        # sine.effort = [np.sin(t) for _ in range(8)]
         t += dt
         pub.publish(sine)
         rate.sleep()

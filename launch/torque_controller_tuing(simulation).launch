@@ -1,5 +1,5 @@
 <launch>
-  <node name="controller" pkg="software_interface" type="vrep_controller_test.py" output="screen"/>
+  <node name="controller" pkg="software_interface" type="vrep_controller_simulation.py" output="screen"/>
 
   <node name="torque" pkg="software_interface" type="torque_controller.py"/>
 
