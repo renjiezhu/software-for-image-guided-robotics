@@ -14,9 +14,30 @@ ROS software controlling a surgical robot (lung biopsy).
 |&#948;yaw|y|h|
 |&#948;needle|i|o|
 
-## Required packages
+## Required ROS configuration
+
+The software is based on ROS, so you need to have ROS
+installed. The version of ROS this is built upon is 
+[Melodic](http://wiki.ros.org/melodic/Installation/Ubuntu), 
+but it works on [Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu) 
+as well. Please follow installation guides to install ROS on your 
+machine and follow some of their beginning instructions (
+for example, [how to create a workspace](http://wiki.ros.org/catkin/Tutorials/create_a_workspace)).
+When you have a catkin workspace, pull this repository to
+the source folder (```[your_catkin_workspace]/src```) and 
+rename the folder to ```software_interface```.
+```
+$ mv software-for-image-guided-robotics software_interface
+```
+
+## Required python packages
 
 - [pyrep](https://github.com/stepjam/PyRep)
+- sympy
+- numpy
+
+you can install the latter two with pip or conda if you don't 
+already have those packages.
 
 
 ## Current start-up procedure:
