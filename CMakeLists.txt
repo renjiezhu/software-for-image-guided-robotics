@@ -214,6 +214,9 @@ include_directories(
 add_executable(keyboard_control src/keyboard_control.cpp)
 target_link_libraries(keyboard_control ${catkin_LIBRARIES})
 
+add_executable(tele_test src/tele_test.cpp)
+target_link_libraries(tele_test ${catkin_LIBRARIES})
+
 # add_executable(robot_ ener src/robot_control_listener.cpp)
 # target_link_libraries(robot_control_listener ${catkin_LIBRARIES})
 

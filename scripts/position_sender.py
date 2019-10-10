@@ -21,10 +21,12 @@
 import rospy, sys
 import numpy as np
 # from std_msgs.msg import Float64
-from sensor_msgs.msg import JointState
+# from sensor_msgs.msg import JointState
+from std_msgs.msg import Time
 
 def publisher():
-    pub = rospy.Publisher("sine", JointState, queue_size=1)
+    pub = rospy.Publisher("latency_test_out", Time, queue_size=1)
+    # pub = rospy.Publisher("sine", JointState, queue_size=1)
     # pub = rospy.Publisher("sine", Float64, queue_size=1)
     rospy.init_node("sine_test", anonymous=True)
     rate = rospy.Rate(1000)
@@ -32,13 +34,15 @@ def publisher():
     dt = 0.005
 
     while not rospy.is_shutdown():
-
-        sine = JointState()
+        x = rospy.Time.now()
+        # sine = JointState()
         # sine = Float64()
-        sine.position = [60*np.sin(t) for _ in range(8)]
-        print(sine.position[0])
+        sine = Time()
+        # sine.position = [60*np.sin(t) for _ in range(8)]
+        # print(sine.position[0])
         # sine.data = (np.sin(t) + 1.0) * 0.5
-        t += dt
+        # t += dt
+        sine.data = x
         pub.publish(sine)
         rate.sleep()
 
