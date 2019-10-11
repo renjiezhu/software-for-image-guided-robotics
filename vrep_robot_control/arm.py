@@ -32,10 +32,10 @@ class CtRobot(RobotComponent):
 
         part_names = ['arm%d_dynamic' % i for i in range(num_joints+1)]
         self.arms = [Shape(pname + suffix) for pname in part_names]
-        # com_names = ['COM_arm%d' % i for i in range(num_joints+1)]
-        # self.COMs = [Dummy(fname + suffix) for com in com_names]
-        # DH_frame_names = ['DH_frame_j%d' % i for i in range(num_joints+1)]
-        # self.DH_frames = [Dummy(dhfname + suffix) for dhfname in DH_frame_names]
+        com_names = ['COM_arm%d' % i for i in range(num_joints+1)]
+        self.COMs = [Dummy(com + suffix) for com in com_names]
+        DH_frame_names = ['DH_frame_j%d' % i for i in range(num_joints+1)]
+        self.DH_frames = [Dummy(dhfname + suffix) for dhfname in DH_frame_names]
 
         # Motion planning handles
         self._ik_target = Dummy('target'+suffix)
