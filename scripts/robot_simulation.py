@@ -36,7 +36,7 @@ import signal, sys, os
 
 sys.path.append(f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/")
 
-from pyrep import PyRep
+# from pyrep import PyRep
 from vrep_robot_control.ct_robot_control import IK_via_vrep
 from vrep_robot_control.arm import CtRobot
 
