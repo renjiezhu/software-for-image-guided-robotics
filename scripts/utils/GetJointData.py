@@ -25,18 +25,27 @@ class data():
         self.frame = frame
         self.timestamp = joint_data[1]
         #Loops over the number of rigid bodies in the scene
-        for i in range(len(joint_data[0])):
-            #print('list index: {}, joint_data: {}'.format(i, joint_data[0][i][1]))
-            self.bodies[joint_data[0][i][0]].position = joint_data[0][i][1]
-            self.bodies[joint_data[0][i][0]].orientation = np.array(joint_data[0][i][2])[[3,0,1,2]] #reorders oreintation to (qw, qx, qy, qz)
-            self.bodies[joint_data[0][i][0]].rotation_mat = tf3d.quaternions.quat2mat(self.bodies[joint_data[0][i][0]].orientation)
 
-            euler = tf3d.euler.quat2euler(self.bodies[joint_data[0][i][0]].orientation, 'rxyz')
-            self.bodies[joint_data[0][i][0]].euler = euler
+        try:
+            num_obj = len(joint_data[0])
+        except:
+            num_obj = joint_data[0]
 
-            hm_mat = np.vstack([np.hstack([self.bodies[joint_data[0][i][0]].rotation_mat,np.array(joint_data[0][i][1])[:,None]]),np.array([0,0,0,1])[None,:]])
-            self.bodies[joint_data[0][i][0]].homogenous_mat = hm_mat
-            self.bodies[joint_data[0][i][0]].homg_inv = self.homg_inv(hm_mat)
+        if num_obj == len(self.bodies):
+            for i in range(len(joint_data[0])):
+                #print('list index: {}, joint_data: {}'.format(i, joint_data[0][i][1]))
+                self.bodies[joint_data[0][i][0]].position = joint_data[0][i][1]
+                self.bodies[joint_data[0][i][0]].orientation = np.array(joint_data[0][i][2])[[3,0,1,2]] #reorders oreintation to (qw, qx, qy, qz)
+                self.bodies[joint_data[0][i][0]].rotation_mat = tf3d.quaternions.quat2mat(self.bodies[joint_data[0][i][0]].orientation)
+
+                euler = tf3d.euler.quat2euler(self.bodies[joint_data[0][i][0]].orientation, 'rxyz')
+                self.bodies[joint_data[0][i][0]].euler = euler
+
+                hm_mat = np.vstack([np.hstack([self.bodies[joint_data[0][i][0]].rotation_mat,np.array(joint_data[0][i][1])[:,None]]),np.array([0,0,0,1])[None,:]])
+                self.bodies[joint_data[0][i][0]].homogenous_mat = hm_mat
+                self.bodies[joint_data[0][i][0]].homg_inv = self.homg_inv(hm_mat)
+        else:
+            raise Exception("Not enough objects to follow. \n \nPlease check Optitrack Motive settings or objects")
         return
 
     #inverts homogeneous matrix

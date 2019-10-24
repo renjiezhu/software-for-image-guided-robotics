@@ -1,0 +1,6 @@
+<launch>
+
+  <node name="optitrack" pkg="software_interface" type="optitrack.py" output="screen"/>
+  <node name="rosbag_all" pkg="rosbag" type="record" args="record -a" />
+  
+</launch>
