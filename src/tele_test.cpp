@@ -22,9 +22,10 @@
 #include "termios.h"
 #include "stdio.h"
 #include <vector>
+#include "math.h"
 
-#define LINEAR_INCRE 0.005
-#define ROTATE_INCRE 0.0872665
+#define LINEAR_INCRE 500//0.0015
+#define ROTATE_INCRE 1000//0.0872665
 
 // robot status
 
@@ -77,16 +78,20 @@ void RobotTele::keyLoop()
     raw.c_cc[VEOF] = 2;
     tcsetattr(kfd, TCSANOW, &raw);
 
+    ros::Rate sensorPublisherRate(1000);
 
     while (ros::ok())
     {
         // get the next event from the keyboard
+
         if (read(kfd, &c, 1) < 0)
         {
             perror("read():");
             exit(-1);
         }
 
+    //    joints[0] = sin(0.5*M_PI*ros::Time::now().toSec())*80000;
+        
         switch (c)
         {
             case '1':
@@ -172,16 +177,20 @@ void RobotTele::keyLoop()
             input.position[i] = joints[i];
         }
 
-        if (dirty)
-        {
-            joint_pub.publish(input);
-            dirty = false;
+        input.header.stamp = ros::Time::now();
+
+        //if (dirty)
+        //{
+        joint_pub.publish(input);
+            //dirty = false;
             
             // for (auto ele : joints)
             // {
             //     std::cout << ele << std::endl;
             // }
-        }
+        //}
+        ros::spinOnce();
+        sensorPublisherRate.sleep();
 
 
     }
