@@ -344,6 +344,7 @@ class RobotState:
         """
         if self._mode is Mode.DIRECT_TELEOP:
             rospy.loginfo("Cannot reset. You are in direct teleoperation mode. ")
+            return
         self.pos = self.__pos[:]
         self.ori = self.__ori[:]
         self.cur_pose = deepcopy(self.__cur_pose)
