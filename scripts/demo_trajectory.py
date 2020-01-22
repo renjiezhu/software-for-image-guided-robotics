@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import signal
 import scipy.signal as sg
 import numpy as np
@@ -6,34 +7,24 @@ import rospy
 import time
 from sensor_msgs.msg import JointState
 
-L_INCRE = 500
-R_INCRE = 1000
+L_INCRE = 0.04
+R_INCRE = 0.04
    
 sample_rate = 250
 
 
 def signal_handler(sig, frame):
-    rate = rospy.Rate(250)
-    while setpoint.position[0] < 0:
-        setpoint.position[0] += L_INCRE
-        setpoint.position[1] += L_INCRE
-        setpoint.position[2] -= L_INCRE
-        setpoint.position[3] -= L_INCRE
-        setpoint.header.stamp = rospy.Time.now()
+    rate = rospy.Rate(sample_rate)
+    setpointOld = setpoint
+
+    for j in range(250):
+        for i in range(8):
+            setpoint.position[i] = 0
+            setpoint.velocity[i] = setpoint.position[i] - setpointOld.position[i]
+            setpoint.header.stamp = rospy.Time.now()
         pub.publish(setpoint)
         rate.sleep()
 
-    while setpoint.position[2] > 0:
-        setpoint.position[2] -= L_INCRE
-        setpoint.header.stamp = rospy.Time.now()
-        pub.publish(setpoint)
-        rate.sleep()
-
-    
-    for i in range(8):
-        setpoint.position[i] = 0
-        setpoint.header.stamp = rospy.Time.now()
-        pub.publish(setpoint)
 
     rospy.signal_shutdown("from signal_handler")
 
@@ -42,47 +33,51 @@ def signal_handler(sig, frame):
 if __name__=="__main__":
 
     rospy.init_node("Demo_trajectory", anonymous=True)
-    pub = rospy.Publisher("testing", JointState, queue_size=1)
+    pub = rospy.Publisher("joint_setpoint", JointState, queue_size=1)
     dt = 1/sample_rate
 
     setpoint = JointState()
     setpoint.position = [0]*8
-
-    input("Please press Enter key to continue...")
-
-    rate = rospy.Rate(250)
-    while setpoint.position[0] > -240000:
-        setpoint.position[0] -= L_INCRE
-        setpoint.position[1] -= L_INCRE
-        setpoint.position[2] += L_INCRE
-        setpoint.position[3] += L_INCRE
-        setpoint.header.stamp = rospy.Time.now()
-        pub.publish(setpoint)
-        rate.sleep()
-
-    while setpoint.position[2] < 420000:
-        setpoint.position[2] += L_INCRE
-        setpoint.header.stamp = rospy.Time.now()
-        pub.publish(setpoint)
-        rate.sleep()
-
-    rospy.loginfo("Reaching midpoint.............")
+    setpoint.velocity = [0]*8
     time.sleep(12)
-    rospy.loginfo("Reached!!")
 
-    rate = rospy.Rate(500)
+
+    rate = rospy.Rate(sample_rate)
     time = 0
     stop = False
+
     while not rospy.is_shutdown() and not stop:
-        setpoint.position[0] = np.sin(time/3)*80000 - 240000
-        setpoint.position[1] = np.sin(time/11)*80000 - 240000
-        setpoint.position[2] = np.sin(time/9.5)*80000 + 420000
-        setpoint.position[3] = np.sin(time/7.1)*120000 + 240000
-        # setpoint.position[5] = sg.square(2 * np.pi * 0.1 * time)*80000
-        setpoint.position[5] = np.sin(time/13)*60000
-        setpoint.position[6] = np.sin(time/11)*60000 
-        setpoint.position[7] = np.sin(time/10)*60000
-        if time > 2*np.pi*30:
+        frequency = 0.5*np.pi
+        
+        setpoint.position[0] = np.sin(time*frequency)*25 - 30
+        setpoint.velocity[0] = np.cos(time*frequency)*25 - 30
+
+    
+        setpoint.position[1] = np.sin(time*frequency)*25 - 30
+        setpoint.velocity[1] = np.cos(time*frequency)*25 - 30
+
+        setpoint.position[2] = np.sin(time*frequency)*25 + 30
+        setpoint.velocity[2] = np.cos(time*frequency)*25 + 30
+
+        '''
+        setpoint.position[3] = np.sin(time*frequency)*80
+        setpoint.velocity[3] = np.cos(time*frequency)*80        
+
+        '''
+        setpoint.position[4] = np.sin(frequency*time)*3.0
+        setpoint.velocity[4] = np.cos(frequency*time)*3.0
+
+        setpoint.position[5] = np.sin(frequency*time)*3.0
+        setpoint.velocity[5] = np.cos(frequency*time)*3.0
+
+        setpoint.position[6] = np.sin(frequency*time)*2.6
+        setpoint.velocity[6] = np.cos(frequency*time)*2.6/2
+        
+        setpoint.position[7] = np.sin(frequency*time)*2.6
+        setpoint.velocity[7] = np.cos(frequency*time)*2.6/2
+        
+
+        if time > 10000:
             stop =  True
         setpoint.header.stamp = rospy.Time.now()
         pub.publish(setpoint)
@@ -91,29 +86,16 @@ if __name__=="__main__":
         signal.signal(signal.SIGINT, signal_handler)
         rate.sleep()
 
-    rate = rospy.Rate(250)
-    while setpoint.position[0] < 0:
-        setpoint.position[0] += L_INCRE
-        setpoint.position[1] += L_INCRE
-        setpoint.position[2] -= L_INCRE
-        setpoint.position[3] -= L_INCRE
-        setpoint.header.stamp = rospy.Time.now()
+    setpointOld = setpoint
+
+    for j in range(250):
+        for i in range(8):
+            setpoint.position[i] = 0
+            setpoint.velocity[i] = setpoint.position[i] - setpointOld.position[i]
+            setpoint.header.stamp = rospy.Time.now()
+
         pub.publish(setpoint)
         rate.sleep()
-
-    while setpoint.position[2] > 0:
-        setpoint.position[2] -= L_INCRE
-        setpoint.header.stamp = rospy.Time.now()
-        pub.publish(setpoint)
-        rate.sleep()
-
-
-    for i in range(8):
-        setpoint.position[i] = 0
-        setpoint.header.stamp = rospy.Time.now()
-        pub.publish(setpoint)
-
-
 
 
 
