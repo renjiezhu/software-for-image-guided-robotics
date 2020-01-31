@@ -87,7 +87,7 @@ if __name__=="__main__":
        [13.72895623/7,  5.18518519,  4.07407407,  0.        ],
        [-17.89036195/16,  6.48148148,  2.5462963 ,  1.85185185]])
 
-        joint_setpoint = np.array([np.sin(time*frequency)*np.pi/3, 0, 0, 0])#[:,np.newaxis]
+        joint_setpoint = np.array([0, np.sin(time*frequency)*np.pi/3, 0, 0])#[:,np.newaxis]
         
         
         motor_setpoint = T4_inv.dot(joint_setpoint)
