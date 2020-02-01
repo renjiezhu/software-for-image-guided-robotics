@@ -172,7 +172,7 @@ class RobotState:
         """
         rospy.loginfo("Calling exit for pyrep")
         self.shutdown_vrep()
-        self._robot_hw.signal_handler(sig, frame)
+        self._robot_hw.signal_handler(sig, frame, joint_angles_pub)
         rospy.signal_shutdown("from [RobotSIM] signal_handler")
 
     def needle_retracted(self):
@@ -419,7 +419,7 @@ class RobotState:
             _robot_hw.set_joint_positions(joint_angles_vrep)
 
             self.joint_angles_stream.position = _robot_hw.get_joint_positions()
-            
+
             self.joint_angles_pub.publish(self.joint_angles_stream)
             self._rate.sleep()
 

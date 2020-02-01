@@ -54,7 +54,7 @@ class RobotHardware:
 
         self.calculate_joint2motor_arm_mixing_matrix()
 
-    def signal_handler(self, sig, frame):
+    def signal_handler(self, sig, frame, pub):
         rate = rospy.Rate(sample_rate)
         velocity = np.zeros(8)
 
