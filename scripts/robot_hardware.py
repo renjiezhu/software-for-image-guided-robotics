@@ -26,7 +26,8 @@ from std_msgs.msg import Int32
 class RobotHardware:
     """
     A class robot hardware class that handles safety precautions
-    for joint limits and etc.
+    for joint limits, motor to joint values,
+    joint mixing matrix, and etc.
     """
     def __init__(self, dt):
         self.dt = dt
@@ -36,6 +37,7 @@ class RobotHardware:
         self.setpoint = JointState()
         self.setpoint.position = [0]*8
         self.setpoint.velocity = [0]*8
+        self.setpoint.effort = [0]*8
 
         self.joint_positions = np.zeros(8)
         self.joint_upper_limits = np.array([0.2,0.13,0.34,np.pi,np.pi/3,np.pi/3,np.pi/3,np.pi/3])
@@ -61,7 +63,7 @@ class RobotHardware:
         for j in range(2000):
             for i in range(8):
                 setpoint.position[i] = 0
-                setpoint.velocity[i] = -1*np.pi/8*np.sign(setpoint.position[i])
+                setpoint.velocity[i] = -1*np.pi/8*np.sign(self.setpoint.position[i])
                 setpoint.header.stamp = rospy.Time.now()
             pub.publish(setpoint)
             rate.sleep()
@@ -93,7 +95,8 @@ class RobotHardware:
         self.motor_positions[4:] = self.arm_mixing_matrix @ self.joint_positions[4:]
         self.motor_positions -= self.zero_motor_angles
 
-        self.motor_velocities = (self.motor_positions - self.motor_positions_old) / self.dt
+        unclipped_velocity = (self.motor_positions - self.motor_positions_old) / self.dt
+        self.motor_velocities = np.clip(unclipped_velocity, -100, 100)
 
     def reorder_setpoint_message(self):
         self.setpoint.position[0] = self.motor_positions[2].squeeze().astype(float)
@@ -104,6 +107,7 @@ class RobotHardware:
 
         self.setpoint.position[2] = self.motor_positions[1].squeeze().astype(float)
         self.setpoint.velocity[2] = self.motor_velocities[1].squeeze().astype(float)
+        self.setpoint.effort[2] = 0.13 #z axis gravity compensation
 
         self.setpoint.position[3] = self.motor_positions[3].squeeze().astype(float)
         self.setpoint.velocity[3] = self.motor_velocities[3].squeeze().astype(float)
@@ -123,7 +127,7 @@ class RobotHardware:
         self.setpoint.header.stamp = rospy.Time.now()
 
     def get_motor_positions_velocities(self):
-        return self.motor_positions, np.maximum(self.motor_velocities, np.ones(8)*np.pi/8)
+        return self.motor_positions, self.motor_velocities
 
     def get_joint_positions(self):
         return self.joint_positions
@@ -146,7 +150,7 @@ if __name__=="__main__":
     robot = RobotHardware(dt)
     
 
-    frequency = 0.05*2*np.pi
+    frequency = 0.02*2*np.pi
 
     time.sleep(2)
 
@@ -157,7 +161,7 @@ if __name__=="__main__":
     while not rospy.is_shutdown():
         
         if state == 0:
-            joint_setpoint = np.array([np.sin(time*frequency)*robot.joint_upper_limits[0]*0.4 + robot.joint_upper_limits[0]/2, 0.01, 0.0, 0, 0, 0, 0, 0])#[:,np.newaxis]
+            joint_setpoint = np.array([np.sin(time*frequency)*robot.joint_upper_limits[0]*0.4 + robot.joint_upper_limits[0]/2, np.sin(time*frequency/3)*robot.joint_upper_limits[1]*0.4 + robot.joint_upper_limits[1]/2, np.sin(time*frequency)*robot.joint_upper_limits[2]*0.4 + robot.joint_upper_limits[2]/2, 0, 0, 0, 0, 0])#[:,np.newaxis]
         elif state == 1:
             joint_setpoint = np.array([0, np.sin(time*frequency/3)*robot.joint_upper_limits[1]*0.4 + robot.joint_upper_limits[1]/2, 0.02, 0, 0, 0, 0, 0])
         elif state == 2:
@@ -170,10 +174,10 @@ if __name__=="__main__":
         elif state == 5:
             joint_setpoint = np.array([0, 0.01, 0.0, 0, 0, 0, np.sin(time*frequency)*robot.joint_upper_limits[5]*0.8, 0])
         
-        if time-time_old > 10:
+        if time-time_old > 30:
             time_old = time
             state += 1
-            state = state % 6
+            state = state % 1
 
         robot.set_joint_positions(joint_setpoint)
         motor_setpoint, motor_velocity = robot.get_motor_positions_velocities()
@@ -183,7 +187,7 @@ if __name__=="__main__":
 
         # rospy.loginfo(setpoint.position)
         time += dt
-        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGINT, robot.signal_handler)
         rate.sleep()
 
 
