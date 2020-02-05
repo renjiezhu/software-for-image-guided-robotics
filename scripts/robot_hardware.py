@@ -161,14 +161,14 @@ if __name__=="__main__":
     while not rospy.is_shutdown():
         
         if state == 0:
-            joint_setpoint = np.array([np.sin(time*frequency)*robot.joint_upper_limits[0]*0.4 + robot.joint_upper_limits[0]/2, np.sin(time*frequency/3)*robot.joint_upper_limits[1]*0.4 + robot.joint_upper_limits[1]/2, np.sin(time*frequency)*robot.joint_upper_limits[2]*0.4 + robot.joint_upper_limits[2]/2, 0, 0, 0, 0, 0])#[:,np.newaxis]
+            joint_setpoint = np.array([np.sin(time*frequency)*robot.joint_upper_limits[0]*0.4 + robot.joint_upper_limits[0]/2, np.sin(time*frequency/3)*robot.joint_upper_limits[1]*0.4 + robot.joint_upper_limits[1]/2, np.sin(time*frequency)*robot.joint_upper_limits[2]*0.2 + robot.joint_upper_limits[2]/4, 0, 0, 0, 0, 0])#[:,np.newaxis]
         elif state == 1:
             joint_setpoint = np.array([0, np.sin(time*frequency/3)*robot.joint_upper_limits[1]*0.4 + robot.joint_upper_limits[1]/2, 0.02, 0, 0, 0, 0, 0])
         elif state == 2:
-            joint_setpoint = np.array([0, 0, np.sin(time*frequency)*robot.joint_upper_limits[2]*0.4 + robot.joint_upper_limits[2]/2, 0, 0, 0, 0, 0])
+            joint_setpoint = np.array([0, 0, np.sin(time*frequency)*robot.joint_upper_limits[2]*0.2 + robot.joint_upper_limits[2]/4, 0, 0, 0, 0, 0])
         #skipping rotary base axis due to poor current tuning
         elif state == 3:
-            joint_setpoint = np.array([0, 0.01, 0, 0, np.sin(time*frequency)*robot.joint_upper_limits[5]*0.8, 0, 0, 0])
+            joint_setpoint = np.array([0, 0.01, 0, 0, np.sin(time*frequency)*robot.joint_upper_limits[5]*0.8, np.sin(time*frequency)*robot.joint_upper_limits[5]*0.8, np.sin(time*frequency)*robot.joint_upper_limits[5]*0.8, 0])
         elif state == 4:
             joint_setpoint = np.array([0, 0.01, 0.0, 0, 0, np.sin(time*frequency)*robot.joint_upper_limits[5]*0.8, 0, 0])
         elif state == 5:
