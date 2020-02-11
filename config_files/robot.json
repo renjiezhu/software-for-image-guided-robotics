@@ -1,0 +1,13 @@
+{
+    "_comment" : "robot.json",
+    "motors" : {
+        "motor0" : "/home/ctrobot/igr/src/motor_controller/config_files/joints/motor0.json",
+        "motor1" : "/home/ctrobot/igr/src/motor_controller/config_files/joints/motor1.json",
+        "motor2" : "/home/ctrobot/igr/src/motor_controller/config_files/joints/motor2.json",
+        "motor3" : "/home/ctrobot/igr/src/motor_controller/config_files/joints/motor3.json",
+        "motor4" : "/home/ctrobot/igr/src/motor_controller/config_files/joints/motor4.json",
+        "motor5" : "/home/ctrobot/igr/src/motor_controller/config_files/joints/motor5.json",
+        "motor6" : "/home/ctrobot/igr/src/motor_controller/config_files/joints/motor6.json",
+        "motor7" : "/home/ctrobot/igr/src/motor_controller/config_files/joints/motor7.json"
+    }
+}
