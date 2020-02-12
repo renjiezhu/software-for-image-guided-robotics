@@ -119,6 +119,16 @@ class ControllerTester:
 
 
 if __name__ == "__main__":
+
+    """
+    NOTE:: Things to be resolved: have multiple pyrep activated to control different scene in VREP
+    """
+
+
+
+
+
+
     ct = ControllerTester()
     try:
         ct.publish()
