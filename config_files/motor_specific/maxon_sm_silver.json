@@ -1,0 +1,9 @@
+{
+    "_comment" : "motor_type",
+    "conversions" : {
+        "current2torque" : 0.0184,
+        "voltage2current" : 0.606,
+        "PPR" : 1024,
+        "gearRatio" : 44.0
+    }
+}

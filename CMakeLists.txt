@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   geometry_msgs
+  # reflexxes
   # tf2
   # tf2_ros
 )
@@ -113,6 +114,7 @@ catkin_package(
  roscpp 
  rospy 
  std_msgs
+#  reflexxes
 #  tf2
 #  tf2_ros
 #  DEPENDS 
@@ -211,8 +213,19 @@ include_directories(
 # add_executable(world_to_base src/world_to_base_client.cpp)
 # target_link_libraries(world_to_base ${catkin_LIBRARIES})
 
+# add_executable(software_interface
+#   include/interpolation.h
+#   include/interpolation.cpp
+#   include/nlohmann/json.hpp
+# )
+
 add_executable(keyboard_control src/keyboard_control.cpp)
 target_link_libraries(keyboard_control ${catkin_LIBRARIES})
+
+# add_executable(reflexxes_interpolation src/reflexxes_interpolation.cpp)
+# target_link_libraries(reflexxes_interpolation reflexxes)
+# target_link_libraries(reflexxes_interpolation ${catkin_LIBRARIES})
+
 
 # add_executable(robot_ ener src/robot_control_listener.cpp)
 # target_link_libraries(robot_control_listener ${catkin_LIBRARIES})
