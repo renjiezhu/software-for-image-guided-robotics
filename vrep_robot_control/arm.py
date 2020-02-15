@@ -1,9 +1,9 @@
 from pyrep.robots.robot_component import RobotComponent
 from pyrep.objects.dummy import Dummy
 from pyrep.objects.shape import Shape
-from pyrep.backend import vrep
+from pyrep.backend import sim
 from pyrep.backend import utils
-from pyrep.backend import vrepConst
+from pyrep.backend import simConst
 import numpy as np
         
 
@@ -56,7 +56,7 @@ class CtRobot(RobotComponent):
 
     def getJacobian(self):
         '''Retrive Jacobian matrix from V-REP'''
-        Jsize, J, _, _ = utils.script_call('getJacobian@ct_robot', vrepConst.sim_scripttype_childscript, ints=[], floats=[], strings=[])
+        Jsize, J, _, _ = utils.script_call('getJacobian@ct_robot', simConst.sim_scripttype_childscript, ints=[], floats=[], strings=[])
         J.reverse()
         return np.array(J).reshape(tuple(Jsize))
 
@@ -64,12 +64,12 @@ class CtRobot(RobotComponent):
         '''Set mass, inertia and center of mass in V-REP model'''
         i1,i2,i3,i4,i5,i6,i7,i8,i9 = inertia
         c1,c2,c3 = centerofmass
-        o, f, s, _ = utils.script_call('setMassAndInertia@ct_robot', vrepConst.sim_scripttype_childscript, ints=[handle], 
+        o, f, s, _ = utils.script_call('setMassAndInertia@ct_robot', simConst.sim_scripttype_childscript, ints=[handle], 
         floats=[mass,i1,i2,i3,i4,i5,i6,i7,i8,i9,c1,c2,c3], strings=[])
         
     def getMassAndInertia(self, handle):
         '''Get mass, inertia and center of mass in V-REP model with respect to World Frame'''
-        _, floatOutput, _ = utils.script_call('getMassAndInertia@ct_robot', vrepConst.sim_scripttype_childscript, ints=[handle], floats=[], strings=[])
+        _, floatOutput, _ = utils.script_call('getMassAndInertia@ct_robot', simConst.sim_scripttype_childscript, ints=[handle], floats=[], strings=[])
         mass = floatOutput[0]
         inertia = np.array(floatOutput[1]).reshape(3,3)
         centerofmass = floatOutput[2]
@@ -77,4 +77,4 @@ class CtRobot(RobotComponent):
 
     def saveScene(self, filename):
         '''Save scene'''
-        _, _, _, _ = utils.script_call('saveScene@ct_robot', vrepConst.sim_scripttype_childscript, ints=[], floats=[], strings=[filename])
+        _, _, _, _ = utils.script_call('saveScene@ct_robot', simConst.sim_scripttype_childscript, ints=[], floats=[], strings=[filename])

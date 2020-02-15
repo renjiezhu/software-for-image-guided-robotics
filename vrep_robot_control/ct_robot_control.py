@@ -4,7 +4,7 @@ import numpy as np
 import transforms3d as t3d
 from vrep_robot_control.arm import CtRobot
 from pyrep.const import JointType, JointMode
-from pyrep.backend import vrep
+from pyrep.backend import sim
 from pyrep.objects.dummy import Dummy
 from pyrep.errors import ConfigurationPathError
 
