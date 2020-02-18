@@ -20,7 +20,8 @@
 """
 
 # Calibration pose of robot base
-cali_pose = [-0.5264, -0.6935, +1.2924]
+#cali_pose = [-0.5264, -0.6935, +1.2924]
+cali_pose = [-0.5264, -0.7935, +1.3074]
 
 import rospy
 import numpy as np
