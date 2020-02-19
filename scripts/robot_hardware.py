@@ -152,7 +152,8 @@ class RobotHardware:
         keep the subscriber running
         """
         # while not rospy.is_shutdown():
-        rospy.Subscriber("/vrep_IK/set_point_IK", JointState, callback=self.clippingCallback)
+        # rospy.Subscriber("/vrep_IK/set_point_IK", JointState, callback=self.clippingCallback)
+        rospy.Subscriber("joint_angles_streaming", JointState, callback=self.clippingCallback)
         signal.signal(signal.SIGINT, self.signal_handler)
 
         rospy.spin()
