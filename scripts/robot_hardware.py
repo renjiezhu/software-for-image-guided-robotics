@@ -32,6 +32,13 @@ class RobotHardware:
     def __init__(self, dt):
         self.dt = dt
 
+
+        rospy.init_node("robot_hardware", anonymous=True)
+        pub = rospy.Publisher("motorSetpoint", JointState, queue_size=1)
+        pubFrequency = rospy.Publisher("masterControlLoopFrequency", Int32, queue_size=1)
+        mclFrequency = Int32(sample_rate)
+        rate = rospy.Rate(sample_rate)
+
         self.zero_motor_angles = np.zeros(8)
 
         self.setpoint = JointState()
@@ -55,6 +62,11 @@ class RobotHardware:
         self.joint_positions = np.zeros(8)
 
         self.calculate_joint2motor_arm_mixing_matrix()
+
+        self.clipped_message_pub = rospy.Publisher(
+            "joint_setpoint_clipped", JointState, queue_size=1
+        )
+        
 
     def signal_handler(self, sig, frame, pub):
         rate = rospy.Rate(sample_rate)
@@ -132,23 +144,35 @@ class RobotHardware:
     def get_joint_positions(self):
         return self.joint_positions
 
+    def run(self):
+        """
+        keep the subscriber running
+        """
+        # while not rospy.is_shutdown():
+            
+        pass
+
+    def clipping_callback(self, data):
+        set_joint_positions(data)
+        clipped_message_pub.publish(self.setpoint)
+
 
 
 
 
 if __name__=="__main__":
 
-    sample_rate = 500
-    dt = 1/sample_rate
+    # sample_rate = 500
+    # dt = 1/sample_rate
 
-    rospy.init_node("class_example", anonymous=True)
-    pub = rospy.Publisher("motorSetpoint", JointState, queue_size=1)
-    pubFrequency = rospy.Publisher("masterControlLoopFrequency", Int32, queue_size=1)
-    mclFrequency = Int32(sample_rate)
-    rate = rospy.Rate(sample_rate)
+    # rospy.init_node("robot_hardware", anonymous=True)
+    # pub = rospy.Publisher("motorSetpoint", JointState, queue_size=1)
+    # pubFrequency = rospy.Publisher("masterControlLoopFrequency", Int32, queue_size=1)
+    # mclFrequency = Int32(sample_rate)
+    # rate = rospy.Rate(sample_rate)
 
     robot = RobotHardware(dt)
-    
+    robot.run()
 
     frequency = 0.02*2*np.pi
 
