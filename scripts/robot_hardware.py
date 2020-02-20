@@ -67,16 +67,15 @@ class RobotHardware:
         self.clipped_message_pub = rospy.Publisher(
             "joint_setpoint_clipped", JointState, queue_size=1
         )
-
-        # self.sub = rospy.Subscriber("/sim_ros_interface/set_point_IK", JointState, callback=self.clippingCallback)
+       # self.sub = rospy.Subscriber("/sim_ros_interface/set_point_IK", JointState, callback=self.clippingCallback)
         
 
     def signal_handler(self, sig, frame):
-
         velocity = np.zeros(8)
 
         for j in range(2000):
             for i in range(8):
+
                 self.setpoint.position[i] = 0
                 self.setpoint.velocity[i] = -1*np.pi/8*np.sign(self.setpoint.position[i])
                 self.setpoint.header.stamp = rospy.Time.now()
@@ -220,6 +219,5 @@ if __name__=="__main__":
     #     time += dt
     #     signal.signal(signal.SIGINT, robot.signal_handler)
     #     rate.sleep()
-
 
 
