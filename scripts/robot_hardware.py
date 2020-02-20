@@ -31,13 +31,14 @@ class RobotHardware:
     """
     def __init__(self, dt):
         self.dt = dt
+        self.sample_rate = 1/self.dt
 
 
         rospy.init_node("robot_hardware", anonymous=True)
-        pub = rospy.Publisher("motorSetpoint", JointState, queue_size=1)
-        pubFrequency = rospy.Publisher("masterControlLoopFrequency", Int32, queue_size=1)
-        mclFrequency = Int32(sample_rate)
-        rate = rospy.Rate(sample_rate)
+        # pub = rospy.Publisher("motorSetpoint", JointState, queue_size=1)
+        # pubFrequency = rospy.Publisher("masterControlLoopFrequency", Int32, queue_size=1)
+        # mclFrequency = Int32(sample_rate)
+        self.rate = rospy.Rate(self.sample_rate)
 
         self.zero_motor_angles = np.zeros(8)
 
@@ -66,19 +67,20 @@ class RobotHardware:
         self.clipped_message_pub = rospy.Publisher(
             "joint_setpoint_clipped", JointState, queue_size=1
         )
+       # self.sub = rospy.Subscriber("/sim_ros_interface/set_point_IK", JointState, callback=self.clippingCallback)
         
 
-    def signal_handler(self, sig, frame, pub):
-        rate = rospy.Rate(sample_rate)
+    def signal_handler(self, sig, frame):
         velocity = np.zeros(8)
 
         for j in range(2000):
             for i in range(8):
-                setpoint.position[i] = 0
-                setpoint.velocity[i] = -1*np.pi/8*np.sign(self.setpoint.position[i])
-                setpoint.header.stamp = rospy.Time.now()
-            pub.publish(setpoint)
-            rate.sleep()
+
+                self.setpoint.position[i] = 0
+                self.setpoint.velocity[i] = -1*np.pi/8*np.sign(self.setpoint.position[i])
+                self.setpoint.header.stamp = rospy.Time.now()
+            self.clipped_message_pub.publish(self.setpoint)
+            self.rate.sleep()
 
         rospy.signal_shutdown("from [RobotHW] signal_handler")
 
@@ -149,12 +151,16 @@ class RobotHardware:
         keep the subscriber running
         """
         # while not rospy.is_shutdown():
-            
-        pass
+        # rospy.Subscriber("/vrep_IK/set_point_IK", JointState, callback=self.clippingCallback)
+        rospy.Subscriber("joint_angles_streaming", JointState, callback=self.clippingCallback)
+        signal.signal(signal.SIGINT, self.signal_handler)
 
-    def clipping_callback(self, data):
-        set_joint_positions(data)
-        clipped_message_pub.publish(self.setpoint)
+        rospy.spin()
+
+
+    def clippingCallback(self, data):
+        self.set_joint_positions(np.array(data.position))
+        self.clipped_message_pub.publish(self.setpoint)
 
 
 
@@ -171,48 +177,47 @@ if __name__=="__main__":
     # mclFrequency = Int32(sample_rate)
     # rate = rospy.Rate(sample_rate)
 
-    robot = RobotHardware(dt)
+    robot = RobotHardware(dt=0.002)
     robot.run()
 
-    frequency = 0.02*2*np.pi
+    # frequency = 0.02*2*np.pi
 
-    time.sleep(2)
+    # time.sleep(2)
 
-    time = 0
-    time_old = 0
-    state = 0
+    # time = 0
+    # time_old = 0
+    # state = 0
 
-    while not rospy.is_shutdown():
+    # while not rospy.is_shutdown():
         
-        if state == 0:
-            joint_setpoint = np.array([np.sin(time*frequency)*robot.joint_upper_limits[0]*0.4 + robot.joint_upper_limits[0]/2, np.sin(time*frequency/3)*robot.joint_upper_limits[1]*0.4 + robot.joint_upper_limits[1]/2, np.sin(time*frequency)*robot.joint_upper_limits[2]*0.2 + robot.joint_upper_limits[2]/4, 0, 0, 0, 0, 0])#[:,np.newaxis]
-        elif state == 1:
-            joint_setpoint = np.array([0, np.sin(time*frequency/3)*robot.joint_upper_limits[1]*0.4 + robot.joint_upper_limits[1]/2, 0.02, 0, 0, 0, 0, 0])
-        elif state == 2:
-            joint_setpoint = np.array([0, 0, np.sin(time*frequency)*robot.joint_upper_limits[2]*0.2 + robot.joint_upper_limits[2]/4, 0, 0, 0, 0, 0])
-        #skipping rotary base axis due to poor current tuning
-        elif state == 3:
-            joint_setpoint = np.array([0, 0.01, 0, 0, np.sin(time*frequency)*robot.joint_upper_limits[5]*0.8, np.sin(time*frequency)*robot.joint_upper_limits[5]*0.8, np.sin(time*frequency)*robot.joint_upper_limits[5]*0.8, 0])
-        elif state == 4:
-            joint_setpoint = np.array([0, 0.01, 0.0, 0, 0, np.sin(time*frequency)*robot.joint_upper_limits[5]*0.8, 0, 0])
-        elif state == 5:
-            joint_setpoint = np.array([0, 0.01, 0.0, 0, 0, 0, np.sin(time*frequency)*robot.joint_upper_limits[5]*0.8, 0])
+    #     if state == 0:
+    #         joint_setpoint = np.array([np.sin(time*frequency)*robot.joint_upper_limits[0]*0.4 + robot.joint_upper_limits[0]/2, np.sin(time*frequency/3)*robot.joint_upper_limits[1]*0.4 + robot.joint_upper_limits[1]/2, np.sin(time*frequency)*robot.joint_upper_limits[2]*0.2 + robot.joint_upper_limits[2]/4, 0, 0, 0, 0, 0])#[:,np.newaxis]
+    #     elif state == 1:
+    #         joint_setpoint = np.array([0, np.sin(time*frequency/3)*robot.joint_upper_limits[1]*0.4 + robot.joint_upper_limits[1]/2, 0.02, 0, 0, 0, 0, 0])
+    #     elif state == 2:
+    #         joint_setpoint = np.array([0, 0, np.sin(time*frequency)*robot.joint_upper_limits[2]*0.2 + robot.joint_upper_limits[2]/4, 0, 0, 0, 0, 0])
+    #     #skipping rotary base axis due to poor current tuning
+    #     elif state == 3:
+    #         joint_setpoint = np.array([0, 0.01, 0, 0, np.sin(time*frequency)*robot.joint_upper_limits[5]*0.8, np.sin(time*frequency)*robot.joint_upper_limits[5]*0.8, np.sin(time*frequency)*robot.joint_upper_limits[5]*0.8, 0])
+    #     elif state == 4:
+    #         joint_setpoint = np.array([0, 0.01, 0.0, 0, 0, np.sin(time*frequency)*robot.joint_upper_limits[5]*0.8, 0, 0])
+    #     elif state == 5:
+    #         joint_setpoint = np.array([0, 0.01, 0.0, 0, 0, 0, np.sin(time*frequency)*robot.joint_upper_limits[5]*0.8, 0])
         
-        if time-time_old > 30:
-            time_old = time
-            state += 1
-            state = state % 1
+    #     if time-time_old > 30:
+    #         time_old = time
+    #         state += 1
+    #         state = state % 1
 
-        robot.set_joint_positions(joint_setpoint)
-        motor_setpoint, motor_velocity = robot.get_motor_positions_velocities()
+    #     robot.set_joint_positions(joint_setpoint)
+    #     motor_setpoint, motor_velocity = robot.get_motor_positions_velocities()
                 
-        pub.publish(robot.setpoint)
-        pubFrequency.publish(mclFrequency)
+    #     pub.publish(robot.setpoint)
+    #     pubFrequency.publish(mclFrequency)
 
-        # rospy.loginfo(setpoint.position)
-        time += dt
-        signal.signal(signal.SIGINT, robot.signal_handler)
-        rate.sleep()
-
+    #     # rospy.loginfo(setpoint.position)
+    #     time += dt
+    #     signal.signal(signal.SIGINT, robot.signal_handler)
+    #     rate.sleep()
 
 

@@ -20,7 +20,8 @@
 """
 
 # Calibration pose of robot base
-cali_pose = [-0.5264, -0.6935, +1.2924]
+#cali_pose = [-0.5264, -0.6935, +1.2924]
+cali_pose = [-0.5264, -0.7935, +1.3074]
 
 import rospy
 import numpy as np
@@ -100,7 +101,8 @@ class RobotState:
         self._robot_hw = RobotHardware(dt=dt)
 
         # initial robot mode : SETUP_IK or SETUP_PP
-        self._mode = Mode.SETUP_IK
+        # self._mode = Mode.SETUP_IK
+        self._mode = Mode.DIRECT_TELEOP
 
         # dirty markers
         self._dirty = False
@@ -133,7 +135,7 @@ class RobotState:
 
         # send confirmed pose
         self.confirmed_pose_pub = rospy.Publisher(
-            "/vrep_path_planning/robot_confirmed_pose", Twist, queue_size=1
+            "/vrep_IK/robot_confirmed_pose", Twist, queue_size=1
         )
         self.confirmed_pose = Twist()
 
@@ -150,7 +152,8 @@ class RobotState:
         self.joint_angles_stream = JointState()
 
         # set streaming frequency
-        self._rate = rospy.Rate(sample_rate)  # 100hz
+        self._rate = rospy.Rate(250)  # 100hz
+
 
     def switch_mode(self, mode: Mode):
         """
@@ -275,7 +278,8 @@ class RobotState:
             self.confirmed_pose_pub.publish(self.confirmed_pose)
 
             # set mode to teleoperation?
-            self.switch_mode(Mode.TELEOPERATION)
+            # self.switch_mode(Mode.TELEOPERATION)
+            self.switch_mode(Mode.DIRECT_TELEOP)
 
         elif self._mode is Mode.SETUP_PP:
             rospy.loginfo("confirmed; mode: setup_pp")
@@ -415,11 +419,7 @@ class RobotState:
         while not rospy.is_shutdown():
 
             joint_angles_vrep = self._ct_robot.get_joint_positions()
-
-            _robot_hw.set_joint_positions(joint_angles_vrep)
-
-            self.joint_angles_stream.position = _robot_hw.get_joint_positions()
-
+            self.joint_angles_stream.position = joint_angles_vrep
             self.joint_angles_pub.publish(self.joint_angles_stream)
             self._rate.sleep()
 
