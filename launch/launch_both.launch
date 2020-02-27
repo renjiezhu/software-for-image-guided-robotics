@@ -1,0 +1,9 @@
+<launch>
+<!-- master: localhost -->
+<machine name="master" address="localhost" env-loader="todo" user="arclab-rjz"/>
+
+
+<!-- slave : 192.168.1.190 -->
+<!-- (caveat: we need root previlege, but how) -->
+<machine name="slave" address="192.168.1.190" env-loader="todo" user="ctrobot"/>
+</launch>
