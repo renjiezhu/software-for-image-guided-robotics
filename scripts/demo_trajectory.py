@@ -34,7 +34,7 @@ def signal_handler(sig, frame):
 if __name__=="__main__":
 
     rospy.init_node("Demo_trajectory", anonymous=True)
-    pub = rospy.Publisher("motorSetpoint", JointState, queue_size=1)
+    pub = rospy.Publisher("joint_setpoint_clipped", JointState, queue_size=1)
     dt = 1/sample_rate
 
     pubFrequency = rospy.Publisher("masterControlLoopFrequency", Int32, queue_size=1)
@@ -55,8 +55,8 @@ if __name__=="__main__":
     while not rospy.is_shutdown() and not stop:
         frequency = 0.2*np.pi
         
-        # setpoint.position[0] = np.sin(time*frequency)*25 - 30
-        # setpoint.velocity[0] = np.cos(time*frequency)*25*frequency
+        setpoint.position[0] = 25
+        setpoint.velocity[0] = 0
 
     
         # setpoint.position[1] = np.sin(time*frequency)*25 - 30
@@ -82,40 +82,40 @@ if __name__=="__main__":
         # setpoint.velocity[5] = np.cos(time*frequency)*2*frequency 
 
         
-        T4_inv = np.array([[ 5.18518519,  0.        ,  0.        ,  0.        ],
-       [ -6.5993266/1.5 ,  5.18518519,  0.        ,  0.        ],
-       [13.72895623/7,  5.18518519,  4.07407407,  0.        ],
-       [-17.89036195/16,  6.48148148,  2.5462963 ,  1.85185185]])
+    #     T4_inv = np.array([[ 5.18518519,  0.        ,  0.        ,  0.        ],
+    #    [ -6.5993266/1.5 ,  5.18518519,  0.        ,  0.        ],
+    #    [13.72895623/7,  5.18518519,  4.07407407,  0.        ],
+    #    [-17.89036195/16,  6.48148148,  2.5462963 ,  1.85185185]])
 
-        joint_setpoint = np.array([0, np.sin(time*frequency)*np.pi/3, 0, 0])#[:,np.newaxis]
+    #     joint_setpoint = np.array([0, np.sin(time*frequency)*np.pi/3, 0, 0])#[:,np.newaxis]
         
         
-        motor_setpoint = T4_inv.dot(joint_setpoint)
-        motor_velocity = (motor_setpoint - motor_setpoint_old) / dt
-        motor_setpoint_old = motor_setpoint.copy()
-        #5 / 1 is base joint
-        #4 / 0 is linear
-        #6 / 2 is 2nd revolute
-        #7 / 3 is 3rd revolute
+    #     motor_setpoint = T4_inv.dot(joint_setpoint)
+    #     motor_velocity = (motor_setpoint - motor_setpoint_old) / dt
+    #     motor_setpoint_old = motor_setpoint.copy()
+    #     #5 / 1 is base joint
+    #     #4 / 0 is linear
+    #     #6 / 2 is 2nd revolute
+    #     #7 / 3 is 3rd revolute
 
-        motor_setpoint = motor_setpoint.astype(float)
-        motor_velocity = motor_velocity.astype(float)
+    #     motor_setpoint = motor_setpoint.astype(float)
+    #     motor_velocity = motor_velocity.astype(float)
 
         # print(T4_inv)
         # print(motor_setpoint)
         # print(motor_velocity)
 
-        setpoint.position[5] = motor_setpoint[0].squeeze().astype(float)
-        setpoint.velocity[5] = motor_velocity[0].squeeze().astype(float)
+        # setpoint.position[5] = motor_setpoint[0].squeeze().astype(float)
+        # setpoint.velocity[5] = motor_velocity[0].squeeze().astype(float)
 
-        setpoint.position[6] = motor_setpoint[1].squeeze().astype(float)
-        setpoint.velocity[6] = motor_velocity[1].squeeze().astype(float)
+        # setpoint.position[6] = motor_setpoint[1].squeeze().astype(float)
+        # setpoint.velocity[6] = motor_velocity[1].squeeze().astype(float)
         
-        setpoint.position[4] = motor_setpoint[3].squeeze().astype(float)
-        setpoint.velocity[4] = motor_velocity[3].squeeze().astype(float)
+        # setpoint.position[4] = motor_setpoint[3].squeeze().astype(float)
+        # setpoint.velocity[4] = motor_velocity[3].squeeze().astype(float)
 
-        setpoint.position[7] = motor_setpoint[2].squeeze().astype(float)
-        setpoint.velocity[7] = motor_velocity[2].squeeze().astype(float)
+        # setpoint.position[7] = motor_setpoint[2].squeeze().astype(float)
+        # setpoint.velocity[7] = motor_velocity[2].squeeze().astype(float)
 
         # print(setpoint)
         
