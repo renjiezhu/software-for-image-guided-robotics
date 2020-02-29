@@ -29,7 +29,7 @@ class RobotHardware:
     for joint limits, motor to joint values,
     joint mixing matrix, and etc.
     """
-    def __init__(self, dt):
+    def __init__(self, dt=0.001):
         self.dt = dt
         self.sample_rate = 1/self.dt
 
