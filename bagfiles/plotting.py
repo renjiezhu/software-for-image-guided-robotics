@@ -23,10 +23,11 @@ from sensor_msgs.msg import JointState
 # topicname = '/' + input("Which topic? ")
 # type_name = input("Type name? ")
 
-filename = "/home/" + os.environ["USER"] + "/.ros/p_t.bag"
-tpc = "torque_measured_joint_angles"
+filename = "/home/" + os.environ["USER"] + "/.ros/pidtuning.bag"
+tpc = "/motorState"
 
 def getDataTime(filename, topicname, type_name):
+    
     
     time = []
     data = []
@@ -65,9 +66,10 @@ def getDataTime(filename, topicname, type_name):
 
 def plot_one_axis(ind):
     pos, time = getDataTime(filename, tpc, "position[%d]"%ind)
+    print("finish parsing data")
     plt.figure()
     plt.plot(time, pos, label='joint%d'%(ind+1))
-    plt.plot(time, [30]*len(time), label='target position')
+    # plt.plot(time, [30]*len(time), label='target position')
     plt.legend()
 
 
@@ -78,4 +80,4 @@ def plot_one_axis(ind):
 if __name__ == "__main__":
     # rospy.init_node("plot_linstener", anonymous=True)
     # rospy.Subscriber("motor_measured_joint_angles", JointState, plot_callback)
-    plot_one_axis(6)
+    plot_one_axis(0)

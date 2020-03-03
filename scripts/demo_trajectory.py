@@ -55,7 +55,7 @@ if __name__=="__main__":
     while not rospy.is_shutdown() and not stop:
         frequency = 0.2*np.pi
         
-        setpoint.position[0] = 25
+        setpoint.position[0] = -25
         setpoint.velocity[0] = 0
 
     
