@@ -16,7 +16,7 @@ int main(int args, char** argc)
     ros::NodeHandle nh;
     
     // Interpolated Setpoint
-    ros::Publisher pub = nh.advertise<sensor_msgs::JointState>("setpoint_interpolated", 1);
+    ros::Publisher pub = nh.advertise<sensor_msgs::JointState>("joint_setpoint_interpolated", 1);
     sensor_msgs::JointState setpoint_int;
     setpoint_int.position.resize(8);
 

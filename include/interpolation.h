@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <fstream>
 
 // Reflexxes library for interpolation
 #include <ReflexxesAPI.h>
@@ -51,10 +52,11 @@ public:
         // Time-synchronization
         //Flags.SynchronizationBehavior   =   RMLPositionFlags::ONLY_TIME_SYNCHRONIZATION;
 
-        std::string base_path = "/home/arclab-rjz/Documents/igr/src/software_interface/include/limit/"
+        std::string base_path = "/home/arclab-rjz/Documents/igr/src/software_interface/include/limit/";
         std::vector<std::string> motorAddress(8);
         for (int i=0; i<8; ++i) {
-            motorAddress[i] = base_path + "motor" + std::to_string(i) + ".json"
+            motorAddress[i] = base_path + "motor" + std::to_string(i) + ".json";
+            std::cout << motorAddress[i] << std::endl;
         }
 
         // Set up limit for maximum velocity, acceleration, and jerk;

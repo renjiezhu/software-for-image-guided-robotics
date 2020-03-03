@@ -223,8 +223,11 @@ add_executable(inter
   include/interpolation.h
   include/interpolation.cpp
   include/nlohmann/json.hpp
+  src/reflexxes_interpolation.cpp
 )
 target_link_libraries(inter ${catkin_LIBRARIES})
+
+
 
 
 
