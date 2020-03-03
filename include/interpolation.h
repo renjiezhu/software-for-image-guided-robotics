@@ -56,7 +56,7 @@ public:
         std::vector<std::string> motorAddress(8);
         for (int i=0; i<8; ++i) {
             motorAddress[i] = base_path + "motor" + std::to_string(i) + ".json";
-            std::cout << motorAddress[i] << std::endl;
+            // std::cout << motorAddress[i] << std::endl;
         }
 
         // Set up limit for maximum velocity, acceleration, and jerk;
