@@ -1,0 +1,14 @@
+{
+    "_comment" : "motor3.json",
+    "motor_type" : "/home/ctrobot/igr/src/motor_controller/config_files/motor_specific/maxon_black.json",
+    "joint_limits" : {
+        "torque_limit" : 5000.0,
+        "velocity_limit" : 10000.0,
+        "jerk_limit" : 50000.0
+    },
+    "PID_values" : {
+        "P" : 0.005,
+        "I" : 0.0,
+        "D" : 0.00001
+    }
+}

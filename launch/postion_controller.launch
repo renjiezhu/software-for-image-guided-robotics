@@ -1,6 +1,0 @@
-<launch>
-
-  <node name="board" pkg="software_interface" type="position_sender.py" output="screen" />
-
-  <node name="rosbag_all" pkg="rosbag" type="record" args="record -a" />
-</launch>

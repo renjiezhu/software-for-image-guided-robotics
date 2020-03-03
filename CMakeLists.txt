@@ -52,11 +52,11 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  JointAngles.msg
-  Torque.msg
-)
+# add_message_files(
+#   FILES
+#   JointAngles.msg
+#   Torque.msg
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -213,8 +213,15 @@ include_directories(
 # add_executable(world_to_base src/world_to_base_client.cpp)
 # target_link_libraries(world_to_base ${catkin_LIBRARIES})
 
+# add_executable(software_interface
+#   include/interpolation.h
+#   include/interpolation.cpp
+#   include/nlohmann/json.hpp
+# )
+
 add_executable(keyboard_control src/keyboard_control.cpp)
 target_link_libraries(keyboard_control ${catkin_LIBRARIES})
+
 
 add_executable(tele_test src/tele_test.cpp)
 target_link_libraries(tele_test ${catkin_LIBRARIES})
@@ -228,11 +235,9 @@ add_executable(inter
 target_link_libraries(inter ${catkin_LIBRARIES})
 
 
-
-
-
 # add_executable(demo_test src/demo_trajectory.cpp)
 # target_link_libraries(demo_test ${catkin_LIBRARIES})
+
 
 # add_executable(robot_ ener src/robot_control_listener.cpp)
 # target_link_libraries(robot_control_listener ${catkin_LIBRARIES})

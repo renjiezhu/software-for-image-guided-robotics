@@ -20,7 +20,8 @@
 """
 
 # Calibration pose of robot base
-cali_pose = [-0.5264, -0.6935, +1.2924]
+#cali_pose = [-0.5264, -0.6935, +1.2924]
+cali_pose = [-0.5264, -0.7935, +1.3074]
 
 import rospy
 import numpy as np
@@ -39,6 +40,7 @@ sys.path.append(f"/home/{os.environ['USER']}/Documents/igr/src/software_interfac
 from pyrep import PyRep
 from vrep_robot_control.ct_robot_control import IK_via_vrep
 from vrep_robot_control.arm import CtRobot
+from robot_hardware import RobotHardware
 
 from enum import Enum
 
@@ -77,7 +79,7 @@ class RobotState:
     send transform to IGTL link * (subject to change)
     """
 
-    def __init__(self):
+    def __init__(self, sample_rate=200):
 
         rospy.init_node("robot_simulation", anonymous=True)
         rospy.loginfo("V-REP update node is initialized...")
@@ -88,15 +90,19 @@ class RobotState:
             f"/home/{os.environ['USER']}/Documents/igr/src/software_interface/vrep_robot_control/CtRobot.ttt",
             headless=False,
         )
-        self._dt = 0.01
+        self._dt = 0.01 # 1/sample_rate
         self._pr.set_simulation_timestep(self._dt)
         self._pr.start()
 
         # pyrep robot model instance
         self._ct_robot = CtRobot()
 
+        # robot hardware instance, handle various limits for safety precautions
+        self._robot_hw = RobotHardware(dt=dt)
+
         # initial robot mode : SETUP_IK or SETUP_PP
-        self._mode = Mode.SETUP_IK
+        # self._mode = Mode.SETUP_IK
+        self._mode = Mode.DIRECT_TELEOP
 
         # dirty markers
         self._dirty = False
@@ -129,7 +135,7 @@ class RobotState:
 
         # send confirmed pose
         self.confirmed_pose_pub = rospy.Publisher(
-            "/vrep_path_planning/robot_confirmed_pose", Twist, queue_size=1
+            "/vrep_IK/robot_confirmed_pose", Twist, queue_size=1
         )
         self.confirmed_pose = Twist()
 
@@ -146,7 +152,8 @@ class RobotState:
         self.joint_angles_stream = JointState()
 
         # set streaming frequency
-        self._rate = rospy.Rate(100)  # 100hz
+        self._rate = rospy.Rate(250)  # 100hz
+
 
     def switch_mode(self, mode: Mode):
         """
@@ -168,7 +175,8 @@ class RobotState:
         """
         rospy.loginfo("Calling exit for pyrep")
         self.shutdown_vrep()
-        rospy.signal_shutdown("from signal_handler")
+        self._robot_hw.signal_handler(sig, frame, joint_angles_pub)
+        rospy.signal_shutdown("from [RobotSIM] signal_handler")
 
     def needle_retracted(self):
         """
@@ -270,7 +278,8 @@ class RobotState:
             self.confirmed_pose_pub.publish(self.confirmed_pose)
 
             # set mode to teleoperation?
-            self.switch_mode(Mode.TELEOPERATION)
+            # self.switch_mode(Mode.TELEOPERATION)
+            self.switch_mode(Mode.DIRECT_TELEOP)
 
         elif self._mode is Mode.SETUP_PP:
             rospy.loginfo("confirmed; mode: setup_pp")
@@ -344,6 +353,7 @@ class RobotState:
         """
         if self._mode is Mode.DIRECT_TELEOP:
             rospy.loginfo("Cannot reset. You are in direct teleoperation mode. ")
+            return
         self.pos = self.__pos[:]
         self.ori = self.__ori[:]
         self.cur_pose = deepcopy(self.__cur_pose)
@@ -409,9 +419,7 @@ class RobotState:
         while not rospy.is_shutdown():
 
             joint_angles_vrep = self._ct_robot.get_joint_positions()
-
-            self.joint_angles_msg.position = joint_angles_vrep
-
+            self.joint_angles_stream.position = joint_angles_vrep
             self.joint_angles_pub.publish(self.joint_angles_stream)
             self._rate.sleep()
 

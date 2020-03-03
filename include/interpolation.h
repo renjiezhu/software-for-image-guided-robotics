@@ -59,6 +59,7 @@ public:
             // std::cout << motorAddress[i] << std::endl;
         }
 
+
         // Set up limit for maximum velocity, acceleration, and jerk;
         for (int i=0; i<NUMBER_OF_DOFS; i++){
             std::ifstream motor_config_file(motorAddress[i]);

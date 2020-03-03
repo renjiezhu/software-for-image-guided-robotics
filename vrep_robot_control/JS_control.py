@@ -28,7 +28,7 @@ def cacl_tau(robot, kp, kv, posd: list, posm: list, veld: list, velm: list, xyz:
     posd = np.array(posd).squeeze()
     posm = np.array(posm).squeeze()
     
-    num_joints = robot.num_joints
+    num_joints = robot._num_joints
     gain_v = kv.dot((veld-velm).reshape(num_joints, 1))
     gain_x = kp.dot((posd-posm).reshape(num_joints, 1))
     M = np.array(robot.Mq(posd, xyz))        # (num_joints, num_joints)
@@ -62,7 +62,7 @@ def cacl_tau_ModelFree(robot, kp, kv, posd: list, posm: list, veld: list, velm: 
     posd = np.array(posd).squeeze()
     posm = np.array(posm).squeeze()
 
-    num_joints = robot.num_joints
+    num_joints = robot._num_joints
     gain_v = kv.dot((veld-velm).reshape(num_joints, 1))
     gain_x = kp.dot((posd-posm).reshape(num_joints, 1))
     M = np.eye(num_joints)       # (num_joints, num_joints)
@@ -96,7 +96,7 @@ def cacl_tau_GravityCompensation(robot, kp, kv, posd: list, posm: list, veld: li
     posd = np.array(posd).squeeze()
     posm = np.array(posm).squeeze()
 
-    num_joints = robot.num_joints
+    num_joints = robot._num_joints
     gain_v = kv.dot((veld-velm).reshape(num_joints, 1))
     gain_x = kp.dot((posd-posm).reshape(num_joints, 1))
     M = np.eye(num_joints)        # (num_joints, num_joints)

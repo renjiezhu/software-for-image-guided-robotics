@@ -294,6 +294,10 @@ void RobotControlKey::keyLoop()
             ROS_INFO("Reset. ");
             returnZero();
         }
+
+    // maximum keyboard instruction rate is 100Hz
+    usleep(10);
+    
     }
 
     return;
