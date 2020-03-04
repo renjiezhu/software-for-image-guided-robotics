@@ -31,7 +31,7 @@
 #define KEYCODE_U 0x41
 #define KEYCODE_D 0x42
 
-#define LINEAR_STEP 0.5
+#define LINEAR_STEP 0.2
 
 // Keyboard control Class
 
