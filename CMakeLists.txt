@@ -226,13 +226,13 @@ target_link_libraries(keyboard_control ${catkin_LIBRARIES})
 add_executable(tele_test src/tele_test.cpp)
 target_link_libraries(tele_test ${catkin_LIBRARIES})
 
-add_executable(inter
+add_executable(interpolation
   include/interpolation.h
   include/interpolation.cpp
   include/nlohmann/json.hpp
   src/reflexxes_interpolation.cpp
 )
-target_link_libraries(inter ${catkin_LIBRARIES})
+target_link_libraries(interpolation ${catkin_LIBRARIES})
 
 
 # add_executable(demo_test src/demo_trajectory.cpp)

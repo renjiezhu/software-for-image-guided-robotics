@@ -21,7 +21,7 @@ int main(int args, char** argc)
     setpoint_int.position.resize(8);
 
     // Subscribe from upper level setpoint
-    ros::Subscriber sub = nh.subscribe("setpoint_IK", 1, callBack);
+    ros::Subscriber sub = nh.subscribe("joint_setpoint_clipped", 1, callBack);
     
     // ROS fequency
     ros::Rate sensorPublisherRate(1000);

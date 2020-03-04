@@ -31,6 +31,8 @@
 #define KEYCODE_U 0x41
 #define KEYCODE_D 0x42
 
+#define LINEAR_STEP 0.5
+
 // Keyboard control Class
 
 class RobotControlKey
@@ -141,25 +143,25 @@ void RobotControlKey::keyLoop()
         {
         case KEYCODE_L:
             // --x;
-            x = -1;
+            x = -LINEAR_STEP;
             ROS_DEBUG("X - ,   x=%1d", (int)x);
             dirty = true;
             break;
         case KEYCODE_R:
             // ++x;
-            x = 1;
+            x = LINEAR_STEP;
             ROS_DEBUG("X + ,   x=%1d", (int)x);
             dirty = true;
             break;
         case KEYCODE_U:
             // ++y;
-            y = 1;
+            y = LINEAR_STEP;
             ROS_DEBUG("Y + ,   y=%1d", (int)y);
             dirty = true;
             break;
         case KEYCODE_D:
             // --y;
-            y = -1;
+            y = -LINEAR_STEP;
             ROS_DEBUG("Y - ,   y=%1d", (int)y);
             dirty = true;
             break;
@@ -180,14 +182,14 @@ void RobotControlKey::keyLoop()
         case 'z':
         case 'Z':
             // ++z;
-            z = 1;
+            z = LINEAR_STEP;
             ROS_DEBUG("Z + ,   z=%1d", (int)z);
             dirty = true;
             break;
         case 'x':
         case 'X':
             // --z;
-            z = -1;
+            z = -LINEAR_STEP;
             ROS_DEBUG("Z - ,   z=%1d", (int)z);
             dirty = true;
             break;

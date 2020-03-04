@@ -8,20 +8,6 @@ import time
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Int32
 
-# def signal_handler(sig, frame):
-#     rate = rospy.Rate(sample_rate)
-#     velocity = np.zeros(8)
-
-#     for j in range(2000):
-#         for i in range(8):
-#             setpoint.position[i] = 0
-#             setpoint.velocity[i] = -1*np.pi/8*np.sign(setpoint.position[i])
-#             setpoint.header.stamp = rospy.Time.now()
-#         pub.publish(setpoint)
-#         rate.sleep()
-
-#     rospy.signal_shutdown("from signal_handler")
-
 
 class RobotHardware:
     """
