@@ -1,5 +1,0 @@
-<launch>
-  
-  <node name="class_example" pkg="software_interface" type="robot_hardware.py" output="screen"/>
-
-</launch>
