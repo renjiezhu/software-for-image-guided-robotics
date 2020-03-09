@@ -97,8 +97,13 @@ class RobotState:
         # pyrep robot model instance
         self._ct_robot = CtRobot()
 
+<<<<<<< HEAD
         # # robot hardware instance, handle various limits for safety precautions
         # self._robot_hw = RobotHardware(dt=0.001)
+=======
+        # robot hardware instance, handle various limits for safety precautions
+        # self._robot_hw = RobotHardware(dt=dt)
+>>>>>>> 78dde86364b7419ddadad8bc9783a29041238f3d
 
         # initial robot mode : SETUP_IK or SETUP_PP
         # self._mode = Mode.SETUP_IK

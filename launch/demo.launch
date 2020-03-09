@@ -1,0 +1,7 @@
+<launch>
+  
+  <node name="demo" pkg="software_interface" type="demo_trajectory.py" output="screen"/>
+  <node name="inter" pkg="software_interface" type="interpolation" output="screen"/>
+
+  <node name="rosbag_all" pkg="rosbag" type="record" args="record -a -O pidtuning" />
+</launch>
