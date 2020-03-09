@@ -3,14 +3,10 @@
 #include "sensor_msgs/JointState.h"
 #include <vector>
 
-
-// std::mutex mtx;
 interpolation helper;
 
 void callBack(const sensor_msgs::JointStateConstPtr &data){
-    // mtx.lock();
     helper.updateSetPoint(data->position, data->velocity);
-    // mtx.unlock();
 }
 
 
@@ -20,12 +16,12 @@ int main(int args, char** argc)
     ros::NodeHandle nh;
     
     // Interpolated Setpoint
-    ros::Publisher pub = nh.advertise<sensor_msgs::JointState>("setpoint_interpolated", 1);
+    ros::Publisher pub = nh.advertise<sensor_msgs::JointState>("joint_setpoint_interpolated", 1);
     sensor_msgs::JointState setpoint_int;
     setpoint_int.position.resize(8);
 
     // Subscribe from upper level setpoint
-    ros::Subscriber sub = nh.subscribe("setpoint_IK", 1, callBack);
+    ros::Subscriber sub = nh.subscribe("joint_setpoint_clipped", 1, callBack);
     
     // ROS fequency
     ros::Rate sensorPublisherRate(1000);

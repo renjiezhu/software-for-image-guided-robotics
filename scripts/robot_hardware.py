@@ -15,6 +15,7 @@ from vrep_robot_control.DH_dynamics import dh_robot_config_dynamics
 Intend to apply the gravity compensation torque controller to the arm 4 joints.
 The rest of the 4 joints will still be controlled by position controller.
 """
+     
 
 
 class RobotHardware:

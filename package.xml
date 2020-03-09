@@ -37,6 +37,7 @@
   <!--   <build_depend>roscpp</build_depend> -->
   <!--   <exec_depend>roscpp</exec_depend> -->
   <!-- Use build_depend for packages you need at compile time: -->
+    <build_depend>reflexxes</build_depend>
     <build_depend>message_generation</build_depend>
   <!-- Use build_export_depend for packages you need in order to build against this package: -->
   <!--   <build_export_depend>message_generation</build_export_depend> -->
@@ -59,12 +60,14 @@
   <build_export_depend>reflexxes</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
+  <build_export_depend>reflexxes</build_export_depend>
   <!-- <build_export_depend>tf2</build_export_depend>
   <build_export_depend>tf2_ros</build_export_depend> -->
   <exec_depend>roscpp</exec_depend>
   <exec_depend>reflexxes</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
+  <exec_depend>reflexxes</exec_depend>
   <!-- <exec_depend>tf2</exec_depend>
   <exec_depend>tf2_ros</exec_depend> -->
 

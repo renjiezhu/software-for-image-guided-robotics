@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   geometry_msgs
-  # reflexxes
+  reflexxes
   # tf2
   # tf2_ros
 )
@@ -52,11 +52,11 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  JointAngles.msg
-  Torque.msg
-)
+# add_message_files(
+#   FILES
+#   JointAngles.msg
+#   Torque.msg
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -114,7 +114,7 @@ catkin_package(
  roscpp 
  rospy 
  std_msgs
-#  reflexxes
+ reflexxes
 #  tf2
 #  tf2_ros
 #  DEPENDS 
@@ -222,9 +222,21 @@ include_directories(
 add_executable(keyboard_control src/keyboard_control.cpp)
 target_link_libraries(keyboard_control ${catkin_LIBRARIES})
 
-# add_executable(reflexxes_interpolation src/reflexxes_interpolation.cpp)
-# target_link_libraries(reflexxes_interpolation reflexxes)
-# target_link_libraries(reflexxes_interpolation ${catkin_LIBRARIES})
+
+add_executable(tele_test src/tele_test.cpp)
+target_link_libraries(tele_test ${catkin_LIBRARIES})
+
+add_executable(interpolation
+  include/interpolation.h
+  include/interpolation.cpp
+  include/nlohmann/json.hpp
+  src/reflexxes_interpolation.cpp
+)
+target_link_libraries(interpolation ${catkin_LIBRARIES})
+
+
+# add_executable(demo_test src/demo_trajectory.cpp)
+# target_link_libraries(demo_test ${catkin_LIBRARIES})
 
 
 # add_executable(robot_ ener src/robot_control_listener.cpp)

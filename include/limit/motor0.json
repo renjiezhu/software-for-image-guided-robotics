@@ -1,0 +1,7 @@
+{
+    "joint_limits" : {
+        "torque_limit" : 125.0,
+        "velocity_limit" : 125.0,
+        "jerk_limit" : 1000.0
+    }
+}
