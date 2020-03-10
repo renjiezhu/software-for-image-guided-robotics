@@ -195,12 +195,12 @@ class RobotHardware:
         Calculate the setpoint effort of the arm joints
         Velocity is calculated based on differential (both measured and desired)
         """
-        posm = self.joint_positions
-        posd = self.setpoint.position
-        veld = self.setpoint.velocity
-        velm = (self.joint_positions-self.joint_positions_old)/self.dt
+        posm = self.joint_positions[:4]
+        posd = self.setpoint.position[:4]
+        veld = self.setpoint.velocity[:4]
+        velm = (self.joint_positions[:4]-self.joint_positions_old[:4])/self.dt
         xyz = np.array([0, 0, 0])
-        tau = cacl_tau_ModelFree(self.arm, self.kp, self.kv, posd, posm, veld, velm, xyz)
+        tau = cacl_tau_GravityCompensation(self.arm, self.kp, self.kv, posd, posm, veld, velm, xyz)
         self.setpoint.effort[4:] = tau
 
 
