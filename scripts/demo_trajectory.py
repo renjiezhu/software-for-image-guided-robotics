@@ -53,19 +53,28 @@ if __name__=="__main__":
     motor_setpoint_old = np.zeros(4)
 
     while not rospy.is_shutdown() and not stop:
-        frequency = 0.2*np.pi
+        frequency = 0.1*np.pi
         
         # setpoint.position[0] = -25
         # setpoint.velocity[0] = 0
 
-        setpoint.position[0] = np.sin(time*frequency)*25 - 30
-        setpoint.velocity[0] = np.cos(time*frequency)*25*frequency
+        setpoint.position[0] = np.sin(time*frequency)*50 - 51
+        setpoint.velocity[0] = np.cos(time*frequency)*50*frequency
     
-        setpoint.position[1] = np.sin(time*frequency)*25 - 30
-        setpoint.velocity[1] = np.cos(time*frequency)*25*frequency
+    #    setpoint.position[1] = np.sin(time*frequency)*25 - 30
+    #    setpoint.velocity[1] = np.cos(time*frequency)*25*frequency
 
-        setpoint.position[2] = np.sin(time*frequency)*25 + 30
-        setpoint.velocity[2] = np.cos(time*frequency)*25*frequency
+    #    setpoint.position[2] = np.sin(time*frequency)*25 + 30
+    #    setpoint.velocity[2] = np.cos(time*frequency)*25*frequency
+
+    #    setpoint.position[0] = 0
+    #    setpoint.velocity[0] = 0
+    
+        setpoint.position[1] = 0
+        setpoint.velocity[1] = 0
+
+        setpoint.position[2] = 0
+        setpoint.velocity[2] = 0
 
         '''
         setpoint.position[3] = np.sin(time*frequency)*80

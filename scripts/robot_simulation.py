@@ -21,7 +21,8 @@
 
 # Calibration pose of robot base
 #cali_pose = [-0.5264, -0.6935, +1.2924]
-cali_pose = [-0.5264, -0.7935, +1.3074]
+# cali_pose = [-0.5264, -0.7935, +1.3074]
+cali_pose = [-0.6764, -0.7935, +1.3564]
 
 import rospy
 import numpy as np
@@ -101,8 +102,8 @@ class RobotState:
         # self._robot_hw = RobotHardware(dt=dt)
 
         # initial robot mode : SETUP_IK or SETUP_PP
-        # self._mode = Mode.SETUP_IK
-        self._mode = Mode.DIRECT_TELEOP
+        self._mode = Mode.SETUP_IK
+        # self._mode = Mode.DIRECT_TELEOP
 
         # dirty markers
         self._dirty = False
@@ -278,8 +279,8 @@ class RobotState:
             self.confirmed_pose_pub.publish(self.confirmed_pose)
 
             # set mode to teleoperation?
-            # self.switch_mode(Mode.TELEOPERATION)
-            self.switch_mode(Mode.DIRECT_TELEOP)
+            self.switch_mode(Mode.TELEOPERATION)
+            # self.switch_mode(Mode.DIRECT_TELEOP)
 
         elif self._mode is Mode.SETUP_PP:
             rospy.loginfo("confirmed; mode: setup_pp")

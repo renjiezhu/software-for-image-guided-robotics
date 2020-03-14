@@ -1,0 +1,8 @@
+<launch>
+  <!-- <node name="FPGA_controller" pkg="software_interface" type="test_of_PP.py" output="screen"/> -->
+  
+  <node name="repeatability_simple" pkg="software_interface" type="repeatability_simple.py" />
+  <node name="robot_hardware" pkg="software_interface" type="robot_hardware_repeatability.py" output="screen"/>
+  <node name="interpolation" pkg="software_interface" type="interpolation" output="screen"/>
+
+</launch>

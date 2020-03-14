@@ -74,9 +74,9 @@ class RobotHardware:
             config[param[i]] = np.load(self._path + '/robot_config/inbore/config/%s.npy'%param[i])
 
         # dynamics and pyrep model
-        self.arm = dh_robot_config_dynamics(int(config['num_joints']), config['alpha'], config['theta'], config['D'], config['a'], 
-                                                config['jointType'], config['Tbase'], config['L'], config['M'], 'robot_config/inbore')
-        self.arm.initKinematicTransforms()
+        # self.arm = dh_robot_config_dynamics(int(config['num_joints']), config['alpha'], config['theta'], config['D'], config['a'], 
+        #                                         config['jointType'], config['Tbase'], config['L'], config['M'], 'robot_config/inbore')
+        # self.arm.initKinematicTransforms()
 
         # PID parameters of torque controller
         self.kp = np.diag([1.2, 0.25, 0.5, 0.5])
@@ -111,8 +111,10 @@ class RobotHardware:
     
 
     def set_joint_positions(self, joint_setpoint):
+        # print(joint_setpoint)
         self.joint_positions = np.clip(joint_setpoint, self.joint_lower_limits, self.joint_upper_limits)
         self.joint_positions_old = self.joint_positions.copy()
+        # print(self.joint_positions)
         self.update_motor_positions()
         self.reorder_setpoint_message()
 
@@ -126,6 +128,7 @@ class RobotHardware:
         self.motor_positions[3] = self.joint_positions[3] / self.j3_ratio 
         self.motor_positions[4:] = self.arm_mixing_matrix @ self.joint_positions[4:]
         self.motor_positions -= self.zero_motor_angles
+        # print(self.motor_positions)
 
         unclipped_velocity = (self.motor_positions - self.motor_positions_old) / self.dt
         self.motor_velocities = np.clip(unclipped_velocity, self.motor_velocity_lower_limits, self.motor_velocity_upper_limits)
@@ -185,7 +188,7 @@ class RobotHardware:
 
     def clippingCallback(self, data):
         self.set_joint_positions(np.array(data.position))
-        self.gravity_comp_torque_controller()
+        # self.gravity_comp_torque_controller()
         self.clipped_message_pub.publish(self.setpoint)
         
 
