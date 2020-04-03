@@ -30,6 +30,10 @@ rename the folder to ```software_interface```.
 $ mv software-for-image-guided-robotics software_interface
 ```
 
+In addition to this repo, you need to have the custom 
+[IGL Bridge](https://github.com/renjiezhu/ROS-IGTL-Bridge).
+Please follow the instructions in that repo before continuing. 
+
 ## Required python packages
 
 - [pyrep](https://github.com/stepjam/PyRep)
